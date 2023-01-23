@@ -14,7 +14,7 @@ public sealed class SchemeBoolean : SchemeDatum
         return value ? True : False;
     }
 
-    public override string Print()
+    public override string Write()
     {
         return Value ? "#t" : "#f";
     }
@@ -24,6 +24,11 @@ public sealed class SchemeBoolean : SchemeDatum
         return other is not null && other is SchemeBoolean b && b.Value == Value;
     }
 
-    private static readonly SchemeBoolean True = new(true);
-    private static readonly SchemeBoolean False = new(false);
+    public override SchemeObject Evaluate(Environment e)
+    {
+        return this;
+    }
+
+    public static readonly SchemeBoolean True = new(true);
+    public static readonly SchemeBoolean False = new(false);
 }

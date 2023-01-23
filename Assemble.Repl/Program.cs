@@ -1,10 +1,10 @@
-﻿using Assemble.Interpreter;
+﻿using Assemble.Scheme;
 
 internal class Program
 {
     private static void Main(string[] args)
     {
-        var interpreter = new Interpreter();
+        var environment = Assemble.Scheme.Environment.Default();
 
         Console.WriteLine("Welcome to Assemble!");
         Console.Out.Flush();
@@ -20,9 +20,10 @@ internal class Program
 
                 try
                 {
-                    var result = interpreter.Evaluate(input);
+                    var result = Parser.Parse(input).Evaluate(environment);
 
-                    Console.WriteLine("= " + result.Print());
+                    if (result is not SchemeUndefined)
+                        Console.WriteLine("= " + result.Write());
                 }
                 catch (Exception e)
                 {

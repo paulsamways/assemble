@@ -4,13 +4,13 @@ using static Pidgin.Parser;
 
 namespace Assemble.Scheme;
 
-public static class DatumParser
+public static class Parser
 {
-    public static SchemeDatum Parse(string input)
+    public static SchemeObject Parse(string input)
     {
         return (
             from _ in SkipWhitespaces
-            from e in OneOf(SimpleDatum, CompoundDatum)
+            from e in DatumParser
             from _end in Parser<char>.End
             select e
         ).ParseOrThrow(input);
@@ -19,20 +19,20 @@ public static class DatumParser
     private static Parser<char, T> Token<T>(Parser<char, T> p)
         => Try(p).Before(SkipWhitespaces);
 
-    private static Parser<char, SchemeDatum> Parser =>
+    private static Parser<char, SchemeObject> DatumParser =>
         OneOf(SimpleDatum, CompoundDatum);
 
     #region Simple Datums
 
-    private static Parser<char, SchemeDatum> SimpleDatum =>
+    private static Parser<char, SchemeObject> SimpleDatum =>
         OneOf(BooleanParser, NumberParser, CharacterParser, StringParser, SymbolParser, ByteVectorParser);
 
-    private static Parser<char, SchemeDatum> BooleanParser => Token(
+    private static Parser<char, SchemeObject> BooleanParser => Token(
         from _ in Char('#')
         from v in OneOf(
             Char('t').Before(Try(String("rue")).Optional()),
             Char('f').Before(Try(String("alse")).Optional()))
-        select (SchemeDatum)SchemeBoolean.FromBoolean(v == 't')
+        select (SchemeObject)SchemeBoolean.FromBoolean(v == 't')
     ).Labelled("boolean");
 
     private static decimal ParseDecimal(Maybe<char> sign, string wholePart, Maybe<string> decimalPart)
@@ -49,11 +49,11 @@ public static class DatumParser
         return decimal.Parse(sb.ToString());
     }
 
-    private static Parser<char, SchemeDatum> NumberParser => Token(
+    private static Parser<char, SchemeObject> NumberParser => Token(
         from sign in Try(Char('-').Or(Char('+')).Optional())
         from w in Digit.AtLeastOnceString()
         from d in Try(Char('.').Then(Digit.AtLeastOnceString())).Optional()
-        select (SchemeDatum)new SchemeNumber(ParseDecimal(sign, w, d))
+        select (SchemeObject)new SchemeNumber(ParseDecimal(sign, w, d))
     ).Labelled("number");
 
     private static Parser<char, char> CharacterNameParser =>
@@ -75,15 +75,15 @@ public static class DatumParser
         from v in HexNum
         select (char)v;
 
-    private static Parser<char, SchemeDatum> CharacterParser => Token(
+    private static Parser<char, SchemeObject> CharacterParser => Token(
         from _ in String("#\\")
         from v in OneOf(Try(CharacterNameParser), Try(CharacterHexParser), LetterOrDigit)
-        select (SchemeDatum)new SchemeCharacter(v)
+        select (SchemeObject)new SchemeCharacter(v)
     ).Labelled("character");
 
-    private static Parser<char, SchemeDatum> StringParser => Token(
+    private static Parser<char, SchemeObject> StringParser => Token(
         from v in AnyCharExcept('"').ManyString().Between(Char('"'))
-        select (SchemeDatum)new SchemeString(v)
+        select (SchemeObject)new SchemeString(v)
     ).Labelled("string");
 
     private static Parser<char, char> InitialParser =>
@@ -109,18 +109,18 @@ public static class DatumParser
         from xs in SubsequentParser.ManyString()
         select x + xs;
 
-    private static Parser<char, SchemeDatum> SymbolParser => Token(
+    private static Parser<char, SchemeObject> SymbolParser => Token(
         from n in IdentifierParser
-        select (SchemeDatum)SchemeSymbol.FromString(n)
+        select (SchemeObject)SchemeSymbol.FromString(n)
     ).Labelled("symbol");
 
-    private static Parser<char, SchemeDatum> ByteVectorParser => Token(
+    private static Parser<char, SchemeObject> ByteVectorParser => Token(
         from xs in
             String("#u8").Then(
                 ByteParser
                     .Separated(Whitespaces)
                 .Between(Char('('), Char(')')))
-        select (SchemeDatum)new SchemeBytevector(xs.ToArray())
+        select (SchemeObject)new SchemeBytevector(xs.ToArray())
     ).Labelled("bytevector");
 
     private static Parser<char, byte> ByteParser =>
@@ -130,17 +130,17 @@ public static class DatumParser
 
     #region Compound Datums
 
-    private static Parser<char, SchemeDatum> CompoundDatum =>
+    private static Parser<char, SchemeObject> CompoundDatum =>
         OneOf(ListParser, VectorParser, AbbreviationParser);
 
-    private static Parser<char, SchemeDatum> EmptyListParser =>
+    private static Parser<char, SchemeObject> EmptyListParser =>
         Token(Whitespaces.Between(Char('('), Char(')')))
-            .Select(_ => (SchemeDatum)SchemeEmptyList.Value);
+            .Select(_ => (SchemeObject)SchemeEmptyList.Value);
 
-    private static Parser<char, SchemeDatum> ListOrPairParser =>
+    private static Parser<char, SchemeObject> ListOrPairParser =>
         from _open in Token(Char('('))
-        from cars in Parser.AtLeastOnce()
-        from cdr in Try(Token(Char('.')).Then(Parser)).Optional()
+        from cars in DatumParser.AtLeastOnce()
+        from cdr in Try(Token(Char('.')).Then(DatumParser)).Optional()
         from _close in Char(')')
         select cdr.HasValue
             ? new SchemePair(
@@ -150,26 +150,26 @@ public static class DatumParser
                 cdr.Value)
             : SchemePair.FromEnumerable(cars);
 
-    private static Parser<char, SchemeDatum> ListParser => Token(
+    private static Parser<char, SchemeObject> ListParser => Token(
         OneOf(EmptyListParser, ListOrPairParser)
     ).Labelled("list");
 
-    private static Parser<char, SchemeDatum> VectorParser => Token(
+    private static Parser<char, SchemeObject> VectorParser => Token(
         from _open in Token(String("#("))
-        from xs in Parser.Many()
+        from xs in DatumParser.Many()
         from _close in Char(')')
-        select (SchemeDatum)new SchemeVector(xs.ToArray())
+        select (SchemeObject)new SchemeVector(xs.ToArray())
         ).Labelled("vector");
 
-    private static Parser<char, SchemeDatum> AbbreviationParser =>
+    private static Parser<char, SchemeObject> AbbreviationParser =>
         from abbr in OneOf(
             Char('\'').Select(_ => SchemeSymbol.Known.Quote),
             Char('`').Select(_ => SchemeSymbol.Known.QuasiQuote),
             Char(',').Select(_ => SchemeSymbol.Known.Unquote),
             String(",@").Select(_ => SchemeSymbol.Known.UnquoteSplicing)
         )
-        from v in Parser
-        select (SchemeDatum)new SchemePair(abbr, new SchemePair(v, SchemeEmptyList.Value));
+        from v in DatumParser
+        select (SchemeObject)new SchemePair(abbr, new SchemePair(v, SchemeEmptyList.Value));
 
     #endregion
 }

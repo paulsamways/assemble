@@ -78,7 +78,12 @@ public sealed class SchemeCharacter : SchemeDatum
         return other is not null && other is SchemeCharacter b && b.Value == Value;
     }
 
-    public override string Print()
+    public override SchemeObject Evaluate(Environment e)
+    {
+        return this;
+    }
+
+    public override string Write()
     {
         const string prefix = "#\\";
 

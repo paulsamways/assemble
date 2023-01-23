@@ -11,9 +11,14 @@ public sealed class SchemeEmptyList : SchemeDatum
         return other is not null && other is SchemeEmptyList;
     }
 
-    public override string Print()
+    public override string Write()
     {
         return "()";
+    }
+
+    public override SchemeObject Evaluate(Environment e)
+    {
+        return this;
     }
 
     public static readonly SchemeEmptyList Value = new();

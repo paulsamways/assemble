@@ -14,7 +14,12 @@ public sealed class SchemeNumber : SchemeDatum
         return other is not null && other is SchemeNumber b && b.Value == Value;
     }
 
-    public override string Print()
+    public override SchemeObject Evaluate(Environment e)
+    {
+        return this;
+    }
+
+    public override string Write()
     {
         return Value.ToString();
     }

@@ -14,9 +14,14 @@ public sealed class SchemeString : SchemeDatum
         return other is not null && other is SchemeString b && b.Value.Equals(Value);
     }
 
-    public override string Print()
+    public override string Write()
     {
         // TODO: Escape specials
         return $"\"{Value}\"";
+    }
+
+    public override SchemeObject Evaluate(Environment e)
+    {
+        return this;
     }
 }
