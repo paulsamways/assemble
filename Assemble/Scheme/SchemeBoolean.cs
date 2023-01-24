@@ -16,6 +16,12 @@ public sealed class SchemeBoolean : SchemeDatum, Wraps<SchemeBoolean, bool>
         return value ? True : False;
     }
 
+    public static SchemeBoolean FromObject(SchemeObject o)
+    {
+        return o is SchemeBoolean b && !b.Value
+            ? False : True;
+    }
+
     public override string Write()
     {
         return Value ? "#t" : "#f";

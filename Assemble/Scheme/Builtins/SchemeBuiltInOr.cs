@@ -9,7 +9,7 @@ public sealed class SchemeBuiltinOr : SchemeBuiltin
     {
         foreach (var argument in arguments.To<SchemePair>().AsEnumerable())
         {
-            if (argument.Evaluate(e).To<SchemeBoolean>().Value)
+            if (SchemeBoolean.FromObject(argument.Evaluate(e)).Value)
             {
                 return SchemeBoolean.True;
             }

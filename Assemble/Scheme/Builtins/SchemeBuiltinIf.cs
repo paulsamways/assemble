@@ -8,7 +8,7 @@ public sealed class SchemeBuiltinIf : SchemeBuiltin
     public override SchemeObject Call(Environment e, SchemeObject arguments)
     {
         var p = arguments.To<SchemePair>();
-        var test = p.Car.Evaluate(e).To<SchemeBoolean>();
+        var test = SchemeBoolean.FromObject(p.Car.Evaluate(e));
 
         p = p.Cdr.To<SchemePair>();
         if (test.Value)
