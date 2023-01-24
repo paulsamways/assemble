@@ -11,18 +11,12 @@ public sealed class SchemeBytevector : SchemeDatum
 
     public override string Name => "bytevector";
 
-    public override bool Equals(SchemeDatum? other)
-    {
-        return other is not null && other is SchemeBytevector b && b.Value.SequenceEqual(Value);
-    }
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeBytevector b && b.Value.SequenceEqual(Value);
 
     public override string Write()
-    {
-        return $"u8({string.Join(" ", Value)})";
-    }
+        => $"u8({string.Join(" ", Value)})";
 
     public override SchemeObject Evaluate(Environment e)
-    {
-        return this;
-    }
+        => this;
 }

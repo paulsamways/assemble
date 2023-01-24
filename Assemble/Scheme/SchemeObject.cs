@@ -1,6 +1,6 @@
 namespace Assemble.Scheme;
 
-public abstract class SchemeObject
+public abstract class SchemeObject : IEquatable<SchemeObject>
 {
     public virtual T To<T>() where T : SchemeObject
     {
@@ -23,6 +23,7 @@ public abstract class SchemeObject
     public static implicit operator SchemeObject(Func<Environment, SchemeObject, SchemeObject> f)
         => new SchemeBuiltinProcedure((e, xs) => f(e, xs[0]));
 
+
     public abstract SchemeObject Evaluate(Environment e);
 
     public abstract string Name { get; }
@@ -31,4 +32,13 @@ public abstract class SchemeObject
     {
         return $"<{Name}>";
     }
+
+    public abstract bool Equals(SchemeObject? other);
+
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || Equals(obj as SchemeObject);
+    }
+
+    public virtual bool Same(SchemeObject other) => ReferenceEquals(this, other);
 }

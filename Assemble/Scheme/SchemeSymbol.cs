@@ -13,10 +13,10 @@ public sealed class SchemeSymbol : SchemeDatum
 
     public override string Name => "symbol";
 
-    public override bool Equals(SchemeDatum? other)
-    {
-        return other is not null && other is SchemeSymbol b && b.Value.Equals(Value);
-    }
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeSymbol b && b.Value.Equals(Value);
+    public override bool Same(SchemeObject other)
+        => Equals(other);
 
     public override string Write()
     {

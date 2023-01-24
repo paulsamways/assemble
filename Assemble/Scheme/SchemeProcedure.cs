@@ -33,4 +33,7 @@ public class SchemeProcedure : SchemeCallable
 
         return Body.Select(x => x.Evaluate(closure)).Last();
     }
+
+    public override bool Equals(SchemeObject? other)
+        => false;
 }

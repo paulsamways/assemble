@@ -11,10 +11,8 @@ public sealed class SchemeString : SchemeDatum
 
     public override string Name => "string";
 
-    public override bool Equals(SchemeDatum? other)
-    {
-        return other is not null && other is SchemeString b && b.Value.Equals(Value);
-    }
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeString b && b.Value.Equals(Value);
 
     public override string Write()
     {

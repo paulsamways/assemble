@@ -10,8 +10,8 @@ public sealed class SchemeUndefined : SchemeObject
 
     public override string Name => "undefined";
 
-    public override SchemeObject Evaluate(Environment e)
-    {
-        return this;
-    }
+    public override SchemeObject Evaluate(Environment e) => this;
+
+    public override bool Equals(SchemeObject? other) => false;
+    public override bool Same(SchemeObject other) => false;
 }

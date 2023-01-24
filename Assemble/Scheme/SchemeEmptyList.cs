@@ -6,10 +6,11 @@ public sealed class SchemeEmptyList : SchemeDatum
     {
     }
 
-    public override bool Equals(SchemeDatum? other)
-    {
-        return other is not null && other is SchemeEmptyList;
-    }
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeEmptyList;
+
+    public override bool Same(SchemeObject other)
+        => Equals(other);
 
     public override string Name => "null";
 

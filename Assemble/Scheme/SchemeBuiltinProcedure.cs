@@ -11,6 +11,9 @@ public sealed class SchemeBuiltinProcedure : SchemeBuiltin
 
     public override string Name => "procedure";
 
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeBuiltinProcedure p && Func == p.Func;
+
     public override SchemeObject Call(Environment e, SchemeObject arguments)
     {
         return Func(e, arguments
@@ -19,6 +22,21 @@ public sealed class SchemeBuiltinProcedure : SchemeBuiltin
             .Select(x => x.Evaluate(e))
             .ToArray());
     }
+
+    public static Func<Environment, SchemeObject[], SchemeObject> Is<T>()
+        where T : SchemeObject
+        => Unary((x) => x is T);
+
+    public static Func<Environment, SchemeObject[], SchemeObject> IsEq<T>()
+        where T : SchemeObject
+        => NAry<T, SchemeBoolean>((xs) => xs.Length == 0
+            ? SchemeBoolean.True
+            : SchemeBoolean.FromBoolean(xs.All(x => x.Equals(xs[0]))));
+
+    public static Func<Environment, SchemeObject[], SchemeObject> NAry<T, U>(Func<T[], U> func)
+        where T : SchemeObject
+        where U : SchemeObject
+        => (_, xs) => func(xs.Select(x => x.To<T>()).ToArray());
 
     public static Func<Environment, SchemeObject[], SchemeObject> NAry<T, U>(Func<U, U, U> func)
         where T : SchemeObject, Wraps<T, U>

@@ -16,10 +16,12 @@ public sealed class SchemeNumber : SchemeDatum, Wraps<SchemeNumber, decimal>
         return new SchemeNumber(value);
     }
 
-    public override bool Equals(SchemeDatum? other)
-    {
-        return other is not null && other is SchemeNumber b && b.Value == Value;
-    }
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeNumber b && b.Value == Value;
+
+    public override bool Same(SchemeObject other)
+        => Equals(other);
+
 
     public override SchemeObject Evaluate(Environment e)
     {

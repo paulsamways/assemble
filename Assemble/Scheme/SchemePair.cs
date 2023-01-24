@@ -18,10 +18,8 @@ public sealed class SchemePair : SchemeDatum
 
     public override string Name => "pair";
 
-    public override bool Equals(SchemeDatum? other)
-    {
-        return other is not null && other is SchemePair p && p.Car.Equals(Car) && p.Cdr.Equals(Cdr);
-    }
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemePair p && p.Car.Equals(Car) && p.Cdr.Equals(Cdr);
 
     public override string Write()
     {

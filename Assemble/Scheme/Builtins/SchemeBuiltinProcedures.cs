@@ -4,7 +4,59 @@ public static class SchemeBuiltinProcedures
 {
     [SchemeBuiltinProcedure("not")]
     public static readonly Func<Environment, SchemeObject[], SchemeObject> Not
-        = SchemeBuiltinProcedure.Unary<SchemeBoolean, bool>((x) => !x);
+        = SchemeBuiltinProcedure.Unary((x) => !SchemeBoolean.FromObject(x).Value);
+
+    [SchemeBuiltinProcedure("boolean?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsBoolean
+        = SchemeBuiltinProcedure.Is<SchemeBoolean>();
+
+    [SchemeBuiltinProcedure("boolean=?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsBooleanEq
+        = SchemeBuiltinProcedure.IsEq<SchemeBoolean>();
+
+    [SchemeBuiltinProcedure("char?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsCharacter
+        = SchemeBuiltinProcedure.Is<SchemeCharacter>();
+
+    [SchemeBuiltinProcedure("char=?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsCharacterEq
+        = SchemeBuiltinProcedure.IsEq<SchemeCharacter>();
+
+    [SchemeBuiltinProcedure("symbol?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsSymbol
+        = SchemeBuiltinProcedure.Is<SchemeSymbol>();
+
+    [SchemeBuiltinProcedure("symbol=?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsSymbolEq
+        = SchemeBuiltinProcedure.IsEq<SchemeSymbol>();
+
+    [SchemeBuiltinProcedure("string?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsString
+        = SchemeBuiltinProcedure.Is<SchemeString>();
+
+    [SchemeBuiltinProcedure("string=?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsStringEq
+        = SchemeBuiltinProcedure.IsEq<SchemeString>();
+
+    [SchemeBuiltinProcedure("number?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsNumber
+    = SchemeBuiltinProcedure.Is<SchemeNumber>();
+
+    [SchemeBuiltinProcedure("number=?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsNumberEq
+        = SchemeBuiltinProcedure.IsEq<SchemeNumber>();
+
+    [SchemeBuiltinProcedure("eqv?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsEqv
+        = SchemeBuiltinProcedure.Binary((x, y) => x.Same(y));
+
+    [SchemeBuiltinProcedure("eq?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsEq
+        = IsEqv;
+
+    [SchemeBuiltinProcedure("equal?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> IsEqual
+        = SchemeBuiltinProcedure.Binary((x, y) => x.Equals(y));
 
     [SchemeBuiltinProcedure("+")]
     public static readonly Func<Environment, SchemeObject[], SchemeObject> Add

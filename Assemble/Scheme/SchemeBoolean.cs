@@ -27,10 +27,11 @@ public sealed class SchemeBoolean : SchemeDatum, Wraps<SchemeBoolean, bool>
         return Value ? "#t" : "#f";
     }
 
-    public override bool Equals(SchemeDatum? other)
-    {
-        return other is not null && other is SchemeBoolean b && b.Value == Value;
-    }
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeBoolean b && b.Value == Value;
+
+    public override bool Same(SchemeObject other)
+        => Equals(other);
 
     public override SchemeObject Evaluate(Environment e)
     {
