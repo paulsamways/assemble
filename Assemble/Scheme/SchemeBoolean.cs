@@ -1,6 +1,6 @@
 namespace Assemble.Scheme;
 
-public sealed class SchemeBoolean : SchemeDatum
+public sealed class SchemeBoolean : SchemeDatum, Wraps<SchemeBoolean, bool>
 {
     private SchemeBoolean(bool value)
     {
@@ -8,6 +8,8 @@ public sealed class SchemeBoolean : SchemeDatum
     }
 
     public bool Value { get; init; }
+
+    public override string Name => "boolean";
 
     public static SchemeBoolean FromBoolean(bool value)
     {
@@ -27,6 +29,16 @@ public sealed class SchemeBoolean : SchemeDatum
     public override SchemeObject Evaluate(Environment e)
     {
         return this;
+    }
+
+    public bool Unwrap()
+    {
+        return Value;
+    }
+
+    public static SchemeBoolean Wrap(bool value)
+    {
+        return FromBoolean(value);
     }
 
     public static readonly SchemeBoolean True = new(true);

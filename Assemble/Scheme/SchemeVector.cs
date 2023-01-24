@@ -9,6 +9,8 @@ public sealed class SchemeVector : SchemeDatum
 
     public SchemeObject[] Values { get; init; }
 
+    public override string Name => "vector";
+
     public override bool Equals(SchemeDatum? other)
     {
         return other is not null && other is SchemeVector p && p.Values.SequenceEqual(Values);

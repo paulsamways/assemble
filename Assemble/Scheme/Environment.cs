@@ -1,4 +1,5 @@
-using Assemble.Scheme.Builtins;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Assemble.Scheme;
 
@@ -16,7 +17,7 @@ public class Environment
 
     public SchemeObject? Get(SchemeSymbol symbol)
     {
-        if (_objects.TryGetValue(symbol.Name, out var o))
+        if (_objects.TryGetValue(symbol.Value, out var o))
             return o;
 
         if (_parent is not null)
@@ -26,46 +27,86 @@ public class Environment
     }
     public void Set(SchemeSymbol symbol, SchemeObject o)
     {
-        _objects[symbol.Name] = o;
+        _objects[symbol.Value] = o;
     }
 
-    public static Environment Default()
+    public void Load<T>()
     {
-        var environment = new Environment();
-        environment.Set(SchemeSymbol.Known.Quote, new SchemeBuiltinQuote());
-        environment.Set(SchemeSymbol.Known.Set, new SchemeBuiltinSet());
-        environment.Set(SchemeSymbol.Known.If, new SchemeBuiltinConditional());
-        environment.Set(SchemeSymbol.Known.Not, new SchemeBuiltinProcedure((_, xs) => SchemeBoolean.FromBoolean(!xs[0].To<SchemeBoolean>().Value)));
-        environment.Set(SchemeSymbol.Known.And, new SchemeBuiltinAnd());
-        environment.Set(SchemeSymbol.Known.Or, new SchemeBuiltinOr());
-        environment.Set(SchemeSymbol.Known.Lambda, new SchemeBuiltinLambda());
-
-        environment.Set(SchemeSymbol.FromString("add"), new SchemeBuiltinBinaryNumericFunc((a, b) => a + b));
-        environment.Set(SchemeSymbol.FromString("inc"), new SchemeProcedure(
-            environment,
-            new string[] { "a" },
-            new SchemeObject[] { Parser.Parse("(add a 1)") }
-        ));
-
-        environment.Set(SchemeSymbol.Known.Null_, new SchemeBuiltinProcedure((_, xs) => SchemeBoolean.FromBoolean(xs[0] is SchemeEmptyList)));
-        environment.Set(SchemeSymbol.Known.List_, new SchemeBuiltinProcedure((_, xs) => SchemeBoolean.FromBoolean(xs[0] is SchemePair p && p.IsList)));
-        environment.Set(SchemeSymbol.Known.Pair_, new SchemeBuiltinProcedure((_, xs) => SchemeBoolean.FromBoolean(xs[0] is SchemePair)));
-        environment.Set(SchemeSymbol.Known.Cons, new SchemeBuiltinProcedure((_, xs) => new SchemePair(xs[0], xs[1])));
-        environment.Set(SchemeSymbol.Known.Car, new SchemeBuiltinProcedure((_, xs) => xs[0].To<SchemePair>().Car));
-        environment.Set(SchemeSymbol.Known.Cdr, new SchemeBuiltinProcedure((_, xs) => xs[0].To<SchemePair>().Cdr));
-        environment.Set(SchemeSymbol.Known.SetCar, new SchemeBuiltinProcedure((_, xs) =>
+        foreach (var t in typeof(T).Assembly.ExportedTypes)
         {
-            xs[0].To<SchemePair>().Car = xs[1];
-            return SchemeUndefined.Value;
-        }));
-        environment.Set(SchemeSymbol.Known.SetCdr, new SchemeBuiltinProcedure((_, xs) =>
-        {
-            xs[0].To<SchemePair>().Cdr = xs[1];
-            return SchemeUndefined.Value;
-        }));
+            var attr = t.GetCustomAttribute<SchemeBuiltinAttribute>();
+            if (attr is not null)
+            {
+                if (t.IsAssignableTo(typeof(SchemeBuiltin)))
+                {
+                    var instance = (SchemeBuiltin)Activator.CreateInstance(t)!;
+                    Set(SchemeSymbol.FromString(instance.Name), instance);
+                }
+            }
 
-        environment.Set(SchemeSymbol.Known.Apply, new SchemeBuiltinProcedure((e, xs) => xs[0].To<SchemeProcedure>().Call(e, SchemePair.FromEnumerable(xs[1..]))));
+            if (t.IsAbstract && t.IsSealed)
+            {
+                foreach (var method in t.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                {
+                    var mAttr = method.GetCustomAttribute<SchemeBuiltinProcedureAttribute>();
+                    if (mAttr is not null)
+                    {
+                        if (method.ReturnType == typeof(SchemeObject) &&
+                            method.GetParameters()[0].ParameterType == typeof(Environment) &&
+                            method.GetParameters()[1].ParameterType == typeof(SchemeObject[]))
+                        {
+                            var pEnvironment = Expression.Parameter(typeof(Environment), "e");
+                            var pArguments = Expression.Parameter(typeof(SchemeObject[]), "xs");
 
-        return environment;
+                            var expr = Expression.Lambda<Func<Environment, SchemeObject[], SchemeObject>>(
+                                Expression.Call(null, method, pEnvironment, pArguments),
+                                false,
+                                pEnvironment,
+                                pArguments
+                            );
+
+                            var f = expr.Compile();
+
+                            Set(SchemeSymbol.FromString(mAttr.Name), new SchemeBuiltinProcedure(f));
+                        }
+                    }
+                }
+
+                foreach (var field in t.GetFields(BindingFlags.Public | BindingFlags.Static))
+                {
+                    var fAttr = field.GetCustomAttribute<SchemeBuiltinProcedureAttribute>();
+
+                    if (fAttr is not null)
+                    {
+                        SchemeCallable callable;
+
+                        if (field.FieldType == typeof(Func<Environment, SchemeObject[], SchemeObject>))
+                        {
+                            callable = new SchemeBuiltinProcedure(
+                                (Func<Environment, SchemeObject[], SchemeObject>)field.GetValue(null)!
+                            );
+
+                        }
+                        else if (field.FieldType == typeof(string))
+                        {
+                            callable = Parser.Parse((string)field.GetValue(null)!).Evaluate(this).To<SchemeProcedure>();
+                        }
+                        else
+                        {
+                            throw new Exception("SchemeBuiltinProcedure can only be used on func or string");
+                        }
+
+                        Set(SchemeSymbol.FromString(fAttr.Name), callable);
+                    }
+                }
+            }
+        }
+    }
+
+    public static Environment Base()
+    {
+        var e = new Environment();
+        e.Load<Environment>();
+        return e;
     }
 }

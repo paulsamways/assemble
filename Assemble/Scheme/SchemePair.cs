@@ -16,6 +16,8 @@ public sealed class SchemePair : SchemeDatum
 
     public bool IsImproperList => Cdr is not SchemePair || (Cdr is SchemePair p && p.IsImproperList);
 
+    public override string Name => "pair";
+
     public override bool Equals(SchemeDatum? other)
     {
         return other is not null && other is SchemePair p && p.Car.Equals(Car) && p.Cdr.Equals(Cdr);

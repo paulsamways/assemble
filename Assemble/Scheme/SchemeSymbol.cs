@@ -4,32 +4,34 @@ public sealed class SchemeSymbol : SchemeDatum
 {
     private static readonly Dictionary<string, SchemeSymbol> _interns = new();
 
-    private SchemeSymbol(string name)
+    private SchemeSymbol(string value)
     {
-        Name = name;
+        Value = value;
     }
 
-    public string Name { get; init; }
+    public string Value { get; init; }
+
+    public override string Name => "symbol";
 
     public override bool Equals(SchemeDatum? other)
     {
-        return other is not null && other is SchemeSymbol b && b.Name.Equals(Name);
+        return other is not null && other is SchemeSymbol b && b.Value.Equals(Value);
     }
 
     public override string Write()
     {
-        return Name;
+        return Value;
     }
 
     public override SchemeObject Evaluate(Environment e)
     {
-        return e.Get(this) ?? throw new Exception($"unbound symbol: {Name}");
+        return e.Get(this) ?? throw new Exception($"unbound symbol: {Value}");
     }
 
-    public static SchemeSymbol FromString(string name)
+    public static SchemeSymbol FromString(string value)
     {
-        if (!_interns.TryGetValue(name, out var symbol))
-            symbol = _interns[name] = new SchemeSymbol(name);
+        if (!_interns.TryGetValue(value, out var symbol))
+            symbol = _interns[value] = new SchemeSymbol(value);
 
         return symbol;
     }

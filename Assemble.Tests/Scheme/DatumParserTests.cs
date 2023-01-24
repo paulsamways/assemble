@@ -66,7 +66,7 @@ public class DatumParserTests
     [Fact]
     public void SchemeSymbol_Parse()
     {
-        Assert.Equal("apple", Parser.Parse("apple").To<SchemeSymbol>().Name);
+        Assert.Equal("apple", Parser.Parse("apple").To<SchemeSymbol>().Value);
     }
 
     [Fact]

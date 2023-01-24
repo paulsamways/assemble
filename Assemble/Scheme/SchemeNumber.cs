@@ -1,6 +1,6 @@
 namespace Assemble.Scheme;
 
-public sealed class SchemeNumber : SchemeDatum
+public sealed class SchemeNumber : SchemeDatum, Wraps<SchemeNumber, decimal>
 {
     public SchemeNumber(decimal value)
     {
@@ -8,6 +8,13 @@ public sealed class SchemeNumber : SchemeDatum
     }
 
     public decimal Value { get; init; }
+
+    public override string Name => "number";
+
+    public static SchemeNumber Wrap(decimal value)
+    {
+        return new SchemeNumber(value);
+    }
 
     public override bool Equals(SchemeDatum? other)
     {
@@ -17,6 +24,11 @@ public sealed class SchemeNumber : SchemeDatum
     public override SchemeObject Evaluate(Environment e)
     {
         return this;
+    }
+
+    public decimal Unwrap()
+    {
+        return Value;
     }
 
     public override string Write()

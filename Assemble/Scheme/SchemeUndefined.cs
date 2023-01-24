@@ -8,6 +8,8 @@ public sealed class SchemeUndefined : SchemeObject
 
     public static readonly SchemeUndefined Value = new();
 
+    public override string Name => "undefined";
+
     public override SchemeObject Evaluate(Environment e)
     {
         return this;

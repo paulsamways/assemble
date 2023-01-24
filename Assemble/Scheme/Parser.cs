@@ -105,9 +105,15 @@ public static class Parser
         OneOf("+-");
 
     private static Parser<char, string> IdentifierParser =>
-        from x in InitialParser
-        from xs in SubsequentParser.ManyString()
-        select x + xs;
+        Try(PeculiarIdentifier).Or(
+            from x in InitialParser
+            from xs in SubsequentParser.ManyString()
+            select x + xs
+        );
+
+    private static Parser<char, string> PeculiarIdentifier =>
+        from x in ExplicitSignParser
+        select x.ToString();
 
     private static Parser<char, SchemeObject> SymbolParser => Token(
         from n in IdentifierParser

@@ -11,6 +11,8 @@ public sealed class SchemeEmptyList : SchemeDatum
         return other is not null && other is SchemeEmptyList;
     }
 
+    public override string Name => "null";
+
     public override string Write()
     {
         return "()";

@@ -9,6 +9,8 @@ public sealed class SchemeString : SchemeDatum
 
     public string Value { get; init; }
 
+    public override string Name => "string";
+
     public override bool Equals(SchemeDatum? other)
     {
         return other is not null && other is SchemeString b && b.Value.Equals(Value);

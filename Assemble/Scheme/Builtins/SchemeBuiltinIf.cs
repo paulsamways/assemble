@@ -1,7 +1,10 @@
 namespace Assemble.Scheme.Builtins;
 
-public sealed class SchemeBuiltinConditional : SchemeBuiltin
+[SchemeBuiltin]
+public sealed class SchemeBuiltinIf : SchemeBuiltin
 {
+    public override string Name => "if";
+
     public override SchemeObject Call(Environment e, SchemeObject arguments)
     {
         var p = arguments.To<SchemePair>();

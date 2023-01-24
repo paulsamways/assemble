@@ -9,6 +9,8 @@ public sealed class SchemeBytevector : SchemeDatum
 
     public byte[] Value { get; init; }
 
+    public override string Name => "bytevector";
+
     public override bool Equals(SchemeDatum? other)
     {
         return other is not null && other is SchemeBytevector b && b.Value.SequenceEqual(Value);

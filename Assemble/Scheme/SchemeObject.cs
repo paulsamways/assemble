@@ -10,10 +10,25 @@ public abstract class SchemeObject
         throw new Exception($"Type error: have {GetType()} but wanted {typeof(T)}");
     }
 
+    public static implicit operator SchemeObject(bool b) => SchemeBoolean.FromBoolean(b);
+
+    public static implicit operator SchemeObject(string s) => new SchemeString(s);
+
+    public static implicit operator SchemeObject(char c) => new SchemeCharacter(c);
+
+    public static implicit operator SchemeObject(decimal d) => new SchemeNumber(d);
+
+    public static implicit operator SchemeObject(byte[] bs) => new SchemeBytevector(bs);
+
+    public static implicit operator SchemeObject(Func<Environment, SchemeObject, SchemeObject> f)
+        => new SchemeBuiltinProcedure((e, xs) => f(e, xs[0]));
+
     public abstract SchemeObject Evaluate(Environment e);
+
+    public abstract string Name { get; }
 
     public virtual string Write()
     {
-        return $"<{GetType().Name}>";
+        return $"<{Name}>";
     }
 }

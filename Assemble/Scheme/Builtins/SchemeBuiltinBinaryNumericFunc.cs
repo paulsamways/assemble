@@ -9,6 +9,8 @@ public sealed class SchemeBuiltinBinaryNumericFunc : SchemeBuiltin
 
     public Func<decimal, decimal, decimal> Func { get; }
 
+    public override string Name => "procedure";
+
     public override SchemeObject Call(Environment e, SchemeObject arguments)
     {
         var result = arguments

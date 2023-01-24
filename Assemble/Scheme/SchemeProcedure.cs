@@ -15,6 +15,8 @@ public class SchemeProcedure : SchemeCallable
 
     public SchemeObject[] Body { get; init; }
 
+    public override string Name => "procedure";
+
     public override SchemeObject Call(Environment e, SchemeObject arguments)
     {
         var closure = new Environment(Closure);

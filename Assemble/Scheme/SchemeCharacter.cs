@@ -73,6 +73,8 @@ public sealed class SchemeCharacter : SchemeDatum
 
     public char Value { get; init; }
 
+    public override string Name => "character";
+
     public override bool Equals(SchemeDatum? other)
     {
         return other is not null && other is SchemeCharacter b && b.Value == Value;

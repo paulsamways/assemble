@@ -4,6 +4,10 @@
     <ProjectReference Include="..\Assemble\Assemble.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ReadLine" Version="2.0.1" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
