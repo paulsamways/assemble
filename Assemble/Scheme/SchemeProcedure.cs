@@ -29,7 +29,7 @@ public class SchemeProcedure : SchemeCallable
             args.Add(arguments);
 
         foreach (var (k, v) in Parameters.Zip(args))
-            closure.Set(SchemeSymbol.FromString(k), v.Evaluate(closure));
+            closure.Set(SchemeSymbol.FromString(k), v.Evaluate(e));
 
         return Body.Select(x => x.Evaluate(closure)).Last();
     }

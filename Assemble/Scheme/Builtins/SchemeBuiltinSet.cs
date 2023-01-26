@@ -9,10 +9,13 @@ public sealed class SchemeBuiltinSet : SchemeBuiltin
     {
         var p = arguments.To<SchemePair>();
         var symbol = p.Car.To<SchemeSymbol>();
+
+        symbol.Evaluate(e);
+
         var value = p.Cdr.To<SchemePair>().Car.Evaluate(e);
 
         e.Set(symbol, value);
 
-        return value;
+        return SchemeUndefined.Value;
     }
 }

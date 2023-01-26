@@ -5,14 +5,14 @@ namespace Assemble.Scheme;
 
 public class Environment
 {
-    private readonly Environment? _parent;
+    private readonly Environment[] _parents;
 
     private readonly Dictionary<string, SchemeObject> _objects;
 
-    public Environment(Environment? parent = null)
+    public Environment(params Environment[] parents)
     {
         _objects = new();
-        _parent = parent;
+        _parents = parents;
     }
 
     public SchemeObject? Get(SchemeSymbol symbol)
@@ -20,8 +20,13 @@ public class Environment
         if (_objects.TryGetValue(symbol.Value, out var o))
             return o;
 
-        if (_parent is not null)
-            return _parent.Get(symbol);
+        foreach (var parent in _parents)
+        {
+            o = parent.Get(symbol);
+
+            if (o is not null)
+                return o;
+        }
 
         return null;
     }

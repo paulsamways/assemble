@@ -77,6 +77,10 @@ public static class SchemeBuiltinProcedures
     [SchemeBuiltinProcedure("inc")]
     public const string Inc = "(lambda (a) (+ a 1))";
 
+    [SchemeBuiltinProcedure("<")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> LessThan
+         = SchemeBuiltinProcedure.Binary<SchemeNumber, decimal, SchemeNumber, decimal, SchemeBoolean, bool>((a, b) => a < b);
+
     [SchemeBuiltinProcedure("null?")]
     public static readonly Func<Environment, SchemeObject[], SchemeObject> IsNull
         = SchemeBuiltinProcedure.Unary(x => x is SchemeEmptyList);
@@ -120,6 +124,12 @@ public static class SchemeBuiltinProcedures
     [SchemeBuiltinProcedure("apply")]
     public static SchemeObject Apply(Environment e, SchemeObject[] xs)
     {
-        return xs[0].To<SchemeProcedure>().Call(e, SchemePair.FromEnumerable(xs[1..]));
+        return xs[0].To<SchemeCallable>().Call(e, SchemePair.FromEnumerable(xs[1..]));
+    }
+
+    [SchemeBuiltinProcedure("eval")]
+    public static SchemeObject Eval(Environment e, SchemeObject[] xs)
+    {
+        return xs[0].Evaluate(e);
     }
 }

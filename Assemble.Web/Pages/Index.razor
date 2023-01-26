@@ -1,0 +1,50 @@
+﻿@page "/"
+
+<ol>
+    @foreach (var item in _history)
+    {
+        <li>@item.Item1 == @item.Item2.Write()</li>
+    }
+</ol>
+
+<textarea @oninput="OnEditorChange">
+    @_editor
+</textarea>
+<button type="button" @onclick="OnButtonClick">Run</button>
+<span>@_error</span>
+<textarea>
+    @_result?.Write()
+</textarea>
+
+@code {
+    private List<(string, Scheme.SchemeObject)> _history = new();
+
+    private string? _error;
+
+    private string _editor = "";
+
+    private Scheme.SchemeObject? _result;
+
+    private Scheme.Environment _environment = Scheme.Environment.Base();
+
+    private void OnEditorChange(ChangeEventArgs args)
+    {
+        _editor = args.Value?.ToString() ?? "";
+    }
+
+    private void OnButtonClick(MouseEventArgs args)
+    {
+        _error = null;
+        try
+        {
+            _result = Scheme.Parser.Parse(_editor).Evaluate(_environment);
+        }
+        catch (Exception e)
+        {
+            _error = e.ToString();
+        }
+
+        _history.Add((_editor, _result!));
+        _editor = "";
+    }
+}
