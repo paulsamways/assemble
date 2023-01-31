@@ -1,3 +1,6 @@
+using Assemble.Scheme.Compiler;
+using Assemble.Scheme.Compiler.Instructions;
+
 namespace Assemble.Scheme;
 
 public sealed class SchemeSymbol : SchemeDatum
@@ -28,12 +31,19 @@ public sealed class SchemeSymbol : SchemeDatum
         return e.Get(this) ?? throw new Exception($"unbound symbol: {Value}");
     }
 
+
+
     public static SchemeSymbol FromString(string value)
     {
         if (!_interns.TryGetValue(value, out var symbol))
             symbol = _interns[value] = new SchemeSymbol(value);
 
         return symbol;
+    }
+
+    public override void Compile(InstructionList instructions)
+    {
+        instructions.Push(new InstructionRefer(Value));
     }
 
     public static class Known

@@ -1,5 +1,7 @@
-﻿using Assemble;
+﻿using System.Diagnostics;
+using Assemble;
 using Assemble.Scheme;
+using Assemble.Scheme.Compiler;
 
 internal class Program
 {
@@ -16,8 +18,25 @@ internal class Program
         }
     }
 
+
+    private static int Fib(int n)
+    {
+        if (n < 2) return n;
+        return Fib(n - 1) + Fib(n - 2);
+    }
+
+    // Fib(38)  = 39088169 (184ms)
+    // (fib 38) = 39088169 (136858ms)
+
     private static void Main(string[] args)
     {
+        var stopwatch = new Stopwatch();
+        // stopwatch.Start();
+        // var result2 = Fib(40);
+        // stopwatch.Stop();
+        // System.Console.WriteLine("{0} ({1}ms)", result2, stopwatch.ElapsedMilliseconds);
+        //return;
+
         var environment = Assemble.Scheme.Environment.Base();
 
         ReadLine.AutoCompletionHandler = new AutoCompletionHandler();
@@ -28,6 +47,8 @@ internal class Program
 
         while (true)
         {
+            stopwatch.Reset();
+
             var input = ReadLine.Read("scheme> ");
             if (!string.IsNullOrEmpty(input))
             {
@@ -36,10 +57,17 @@ internal class Program
 
                 try
                 {
-                    var result = Parser.Parse(input).Evaluate(environment);
+                    var interpreter = new Interpreter((SchemeDatum)Parser.Parse(input), environment);
+
+                    foreach (var inst in interpreter.Instructions.ToArray())
+                        System.Console.WriteLine("------: {0}", inst);
+
+                    stopwatch.Start();
+                    var result = interpreter.Run();
+                    stopwatch.Stop();
 
                     if (result is not SchemeUndefined)
-                        Console.WriteLine("------> " + result.Write());
+                        Console.WriteLine("------> {0} ({1}ms)", result.Write(), stopwatch.ElapsedMilliseconds);
                 }
                 catch (Exception e)
                 {

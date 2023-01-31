@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 namespace Assemble.Scheme;
 
 public sealed class SchemeBoolean : SchemeDatum, Wraps<SchemeBoolean, bool>

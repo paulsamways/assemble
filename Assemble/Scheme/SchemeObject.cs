@@ -27,6 +27,11 @@ public abstract class SchemeObject : IEquatable<SchemeObject>
 
     public abstract string Name { get; }
 
+    public override string ToString()
+    {
+        return Write();
+    }
+
     public virtual string Write()
     {
         return $"<{Name}>";

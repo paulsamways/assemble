@@ -1,3 +1,5 @@
+using Assemble.Scheme.Compiler.Instructions;
+
 namespace Assemble.Scheme;
 
 public sealed class SchemeNumber : SchemeDatum, Wraps<SchemeNumber, decimal>
