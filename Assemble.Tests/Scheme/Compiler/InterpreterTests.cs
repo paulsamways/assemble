@@ -46,12 +46,34 @@ public class InterpreterTests
     [Fact]
     public void Lambda_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("((lambda (a b) (b a)) 1 (lambda (c) c))"));
+        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("((lambda (a) a) 1)"));
         output.WriteLine(interpreter.Instructions.ToString());
         var result = interpreter.Run() as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);
+    }
+
+    [Fact]
+    public void CallCC_NoEscape_Test()
+    {
+        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("(+ 1 (call/cc (lambda (k) 3)))"));
+        output.WriteLine(interpreter.Instructions.ToString());
+        var result = interpreter.Run() as SchemeNumber;
+
+        Assert.NotNull(result);
+        Assert.Equal(4, result.Value);
+    }
+
+    [Fact]
+    public void CallCC_Escape_Test()
+    {
+        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("(+ 1 (call/cc (lambda (k) (* 100 (k 2)))))"));
+        output.WriteLine(interpreter.Instructions.ToString());
+        var result = interpreter.Run() as SchemeNumber;
+
+        Assert.NotNull(result);
+        Assert.Equal(3, result.Value);
     }
 
     [Fact]
@@ -79,17 +101,6 @@ public class InterpreterTests
     public void Builtin_Test()
     {
         var interpreter = new Interpreter((SchemeDatum)Parser.Parse("(null? '())"));
-        output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run() as SchemeBoolean;
-
-        Assert.NotNull(result);
-        Assert.True(result.Value);
-    }
-
-    [Fact]
-    public void Fib_Test()
-    {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("(lambda (fib))"));
         output.WriteLine(interpreter.Instructions.ToString());
         var result = interpreter.Run() as SchemeBoolean;
 

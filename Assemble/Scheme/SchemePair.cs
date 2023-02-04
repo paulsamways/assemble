@@ -85,9 +85,39 @@ public sealed class SchemePair : SchemeDatum
                     instructions.Push(closure);
 
                     break;
+
+                case "call/cc":
+
+                    var ccjump = new InstructionJump(0);
+                    instructions.Push(ccjump);
+
+                    var nuateClosureIndex = instructions.Next;
+
+                    var ccclosure = new InstructionClosure();
+                    ccclosure.Parameters = new string[] { "v" };
+                    ccclosure.BodyIndex = instructions.Next;
+
+                    instructions.Push(new InstructionNuate());
+                    instructions.Push(new InstructionReturn());
+
+                    ccjump.Index = instructions.Next;
+
+                    var ccframe = new InstructionFrame(0); // Continuation
+                    instructions.Push(ccframe);
+
+                    instructions.Push(new InstructionConti(nuateClosureIndex));
+                    instructions.Push(new InstructionArgument());
+
+                    Cdr.To<SchemePair>().Car.To<SchemeDatum>().Compile(instructions);
+                    instructions.Push(new InstructionApply());
+
+                    ccframe.Next = instructions.Next;
+
+                    break;
+
                 // (a b)
                 default:
-                    var frame = new InstructionFrame(0);
+                    var frame = new InstructionFrame(0); // Continuation
                     instructions.Push(frame);
 
                     if (Cdr is not SchemeEmptyList)

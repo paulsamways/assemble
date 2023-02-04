@@ -10,9 +10,9 @@ public class Interpreter
     {
         Environment = e ?? Environment.Base();
         Ribs = new List<SchemeObject>();
-        Frames = new Stack<Frame>();
-
         Instructions = new InstructionList();
+        Continuations = new Dictionary<int, Frame>();
+
         source.Compile(Instructions);
     }
 
@@ -22,7 +22,9 @@ public class Interpreter
 
     public List<SchemeObject> Ribs { get; private set; }
 
-    public Stack<Frame> Frames { get; }
+    public Frame? StackFrame { get; set; }
+
+    public Dictionary<int, Frame> Continuations { get; set; }
 
     public int Next { get; set; }
 
@@ -33,24 +35,41 @@ public class Interpreter
         Next = next;
     }
 
+    public void Conti(int key)
+    {
+        if (StackFrame is null)
+            throw new Exception("no frame to capture");
+
+        Continuations[key] = StackFrame;
+    }
+
+    public void Nuate(Frame frame)
+    {
+        StackFrame = frame;
+    }
+
     public void Frame(int next)
     {
-        var frame = new Frame(
+        StackFrame = new Frame(
             Environment,
             Ribs,
-            next
+            next,
+            StackFrame
         );
-        Frames.Push(frame);
+
         Ribs = new List<SchemeObject>();
     }
 
     public void Return()
     {
-        var frame = Frames.Pop();
+        if (StackFrame is null)
+            throw new Exception("no frame to return to");
 
-        Environment = frame.Environment;
-        Ribs = frame.Ribs;
-        Next = frame.Next;
+        Environment = StackFrame.Environment;
+        Ribs = StackFrame.Ribs;
+        Next = StackFrame.Next;
+
+        StackFrame = StackFrame.Parent;
     }
 
     public SchemeObject Run()
