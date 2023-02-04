@@ -14,8 +14,8 @@ public class InterpreterTests
     [Fact]
     public void Constant_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("1"));
-        var result = interpreter.Run() as SchemeNumber;
+        var interpreter = new Interpreter();
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("1")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);
@@ -24,9 +24,9 @@ public class InterpreterTests
     [Fact]
     public void Refer_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("a"));
+        var interpreter = new Interpreter();
         interpreter.Environment.Set(SchemeSymbol.FromString("a"), new SchemeNumber(2));
-        var result = interpreter.Run() as SchemeNumber;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("a")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(2, result.Value);
@@ -35,9 +35,9 @@ public class InterpreterTests
     [Fact]
     public void If_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("(if #t 1 2)"));
+        var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run() as SchemeNumber;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("(if #t 1 2)")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);
@@ -46,9 +46,9 @@ public class InterpreterTests
     [Fact]
     public void Lambda_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("((lambda (a) a) 1)"));
+        var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run() as SchemeNumber;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (a) a) 1)")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);
@@ -57,9 +57,9 @@ public class InterpreterTests
     [Fact]
     public void CallCC_NoEscape_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("(+ 1 (call/cc (lambda (k) 3)))"));
+        var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run() as SchemeNumber;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("(+ 1 (call/cc (lambda (k) 3)))")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(4, result.Value);
@@ -68,9 +68,9 @@ public class InterpreterTests
     [Fact]
     public void CallCC_Escape_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("(+ 1 (call/cc (lambda (k) (* 100 (k 2)))))"));
+        var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run() as SchemeNumber;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("(+ 1 (call/cc (lambda (k) (* 100 (k 2)))))")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(3, result.Value);
@@ -79,9 +79,9 @@ public class InterpreterTests
     [Fact]
     public void LambdaMultipleExpression_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("((lambda (fib) (set! fib (lambda (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 5)) '())"));
+        var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run() as SchemeNumber;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (fib) (set! fib (lambda (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 5)) '())")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(5, result.Value);
@@ -90,9 +90,9 @@ public class InterpreterTests
     [Fact]
     public void Set_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("((lambda (a) (set! a 2) a) 1)"));
+        var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run();
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (a) (set! a 2) a) 1)"));
 
         Assert.Equal(2, result.To<SchemeNumber>().Value);
     }
@@ -100,9 +100,9 @@ public class InterpreterTests
     [Fact]
     public void Builtin_Test()
     {
-        var interpreter = new Interpreter((SchemeDatum)Parser.Parse("(null? '())"));
+        var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run() as SchemeBoolean;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("(null? '())")) as SchemeBoolean;
 
         Assert.NotNull(result);
         Assert.True(result.Value);

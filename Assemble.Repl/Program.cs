@@ -38,6 +38,7 @@ internal class Program
         //return;
 
         var environment = Assemble.Scheme.Environment.Base();
+        var interpreter = new Interpreter(environment);
 
         ReadLine.AutoCompletionHandler = new AutoCompletionHandler();
         ReadLine.HistoryEnabled = true;
@@ -57,10 +58,10 @@ internal class Program
 
                 try
                 {
-                    var interpreter = new Interpreter((SchemeDatum)Parser.Parse(input), environment);
+                    interpreter.Load((SchemeDatum)Parser.Parse(input));
 
-                    foreach (var inst in interpreter.Instructions.ToArray())
-                        System.Console.WriteLine("------: {0}", inst);
+                    foreach (var (i, x) in interpreter.Instructions.ToArray().Select((x, i) => (i, x)))
+                        System.Console.WriteLine("{0:0000}: {1}", i, x);
 
                     stopwatch.Start();
                     var result = interpreter.Run();

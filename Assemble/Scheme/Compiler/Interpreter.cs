@@ -6,14 +6,12 @@ public class Interpreter
 {
     private SchemeObject _accumulator = SchemeUndefined.Value;
 
-    public Interpreter(SchemeDatum source, Environment? e = null)
+    public Interpreter(Environment? e = null)
     {
         Environment = e ?? Environment.Base();
         Ribs = new List<SchemeObject>();
         Instructions = new InstructionList();
         Continuations = new Dictionary<int, Frame>();
-
-        source.Compile(Instructions);
     }
 
     public InstructionList Instructions { get; }
@@ -70,6 +68,18 @@ public class Interpreter
         Next = StackFrame.Next;
 
         StackFrame = StackFrame.Parent;
+    }
+
+    public void Load(SchemeDatum input)
+    {
+        var compiler = new Compiler(Instructions);
+        compiler.Compile(input);
+    }
+
+    public SchemeObject Run(SchemeDatum input)
+    {
+        Load(input);
+        return Run();
     }
 
     public SchemeObject Run()
