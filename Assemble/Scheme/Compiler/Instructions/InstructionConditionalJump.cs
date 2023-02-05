@@ -2,26 +2,26 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionConditionalJump : Instruction
 {
-    public InstructionConditionalJump(int index, bool predicate)
+    public InstructionConditionalJump(int jumpTo, bool predicate)
     {
-        Index = index;
+        JumpTo = jumpTo;
         Predicate = predicate;
     }
 
-    public int Index { get; set; }
+    public int JumpTo { get; set; }
 
     public bool Predicate { get; set; }
 
     public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
     {
         if (SchemeBoolean.FromObject(accumulator).Value == Predicate)
-            interpreter.Next = Index;
+            interpreter.Next = JumpTo;
 
         return accumulator;
     }
 
     public override string ToString()
     {
-        return $"IJMP {Predicate} {Index}";
+        return $"IJMP {Predicate} {JumpTo}";
     }
 }

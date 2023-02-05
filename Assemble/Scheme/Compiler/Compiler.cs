@@ -11,158 +11,151 @@ public class Compiler
         this.instructions = instructions ?? new InstructionList();
     }
 
-    public void Compile(SchemeDatum o) => Compile(o, new InstructionHalt());
+    public void Compile(SchemeDatum o)
+    {
+        CompileDatum(o);
 
-    private void Compile(SchemeDatum x, Instruction next)
+        instructions.Push(new InstructionHalt());
+    }
+
+    private void CompileDatum(SchemeDatum x)
     {
         if (x is SchemeSymbol s)
-            CompileReference(s, next);
+            CompileReference(s);
         else if (x is SchemePair p)
-            CompilePair(p, next);
+            CompilePair(p);
         else
-            CompileConstant(x, next);
+            CompileConstant(x);
     }
 
-    private void CompileReference(SchemeSymbol s, Instruction next)
+    private void CompileReference(SchemeSymbol s)
     {
         instructions.Push(new InstructionRefer(s.Value));
-        instructions.Push(next);
     }
 
-    private void CompileConstant(SchemeDatum x, Instruction next)
+    private void CompileConstant(SchemeDatum x)
     {
         instructions.Push(new InstructionConstant(x));
-        instructions.Push(next);
     }
 
-    private void CompilePair(SchemePair p, Instruction next)
+    private void CompilePair(SchemePair p)
     {
         if (p.Car is SchemeSymbol s)
         {
             switch (s.Value)
             {
                 case "quote":
-                    instructions.Push(new InstructionConstant(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>()));
-                    break;
+                    CompileConstant(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>());
+                    return;
                 case "set!":
-                    p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>().Compile(instructions);
-
-                    instructions.Push(new InstructionAssign(p.Cdr.To<SchemePair>().Car.To<SchemeSymbol>().Value));
-                    break;
+                    CompileAssign(p);
+                    return;
                 case "if":
-
-                    var jif = new InstructionConditionalJump(int.MaxValue, false);
-                    var j = new InstructionJump(int.MaxValue);
-
-                    var cdr = p.Cdr.To<SchemePair>();
-                    cdr.Car.To<SchemeDatum>().Compile(instructions);
-                    cdr = cdr.Cdr.To<SchemePair>();
-                    instructions.Push(jif);
-                    cdr.Car.To<SchemeDatum>().Compile(instructions);
-                    instructions.Push(j);
-                    jif.Index = instructions.Next;
-                    cdr.Cdr.To<SchemePair>().Car.To<SchemeDatum>().Compile(instructions);
-                    j.Index = instructions.Next;
-                    break;
+                    CompileCondition(p);
+                    return;
                 case "lambda":
-
-                    var jump = new InstructionJump(0);
-                    instructions.Push(jump);
-
-                    var closure = new InstructionClosure();
-                    closure.Parameters = p.Cdr.To<SchemePair>().Car.To<SchemePair>().AsEnumerable().Select(x => x.To<SchemeSymbol>().Value).ToArray();
-                    closure.BodyIndex = instructions.Next;
-
-                    foreach (var bodyExpression in p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().AsEnumerable())
-                        bodyExpression.To<SchemeDatum>().Compile(instructions);
-
-                    instructions.Push(new InstructionReturn());
-
-                    jump.Index = instructions.Next;
-
-                    instructions.Push(closure);
-
-                    break;
-
+                    CompileClosure(p);
+                    return;
                 case "call/cc":
-
-                    var ccjump = new InstructionJump(0);
-                    instructions.Push(ccjump);
-
-                    var nuateClosureIndex = instructions.Next;
-
-                    var ccclosure = new InstructionClosure();
-                    ccclosure.Parameters = new string[] { "v" };
-                    ccclosure.BodyIndex = instructions.Next;
-
-                    instructions.Push(new InstructionNuate());
-                    instructions.Push(new InstructionReturn());
-
-                    ccjump.Index = instructions.Next;
-
-                    var ccframe = new InstructionFrame(0); // Continuation
-                    instructions.Push(ccframe);
-
-                    instructions.Push(new InstructionConti(nuateClosureIndex));
-                    instructions.Push(new InstructionArgument());
-
-                    p.Cdr.To<SchemePair>().Car.To<SchemeDatum>().Compile(instructions);
-                    instructions.Push(new InstructionApply());
-
-                    ccframe.Next = instructions.Next;
-
-                    break;
-
-                // (a b)
-                default:
-                    var frame = new InstructionFrame(0); // Continuation
-                    instructions.Push(frame);
-
-                    if (p.Cdr is not SchemeEmptyList)
-                    {
-                        foreach (var argument in p.Cdr.To<SchemePair>().AsEnumerable())
-                        {
-                            argument.To<SchemeDatum>().Compile(instructions);
-                            instructions.Push(new InstructionArgument());
-                        }
-                    }
-
-                    p.Car.To<SchemeSymbol>().Compile(instructions);
-                    instructions.Push(new InstructionApply());
-
-                    frame.Next = instructions.Next;
-
-                    break;
+                case "call-with-current-continuation":
+                    CompileContinuation(p);
+                    return;
             }
         }
-        else // (expr b)
-        {
-            var frame = new InstructionFrame(0);
-            instructions.Push(frame);
 
-            foreach (var argument in p.Cdr.To<SchemePair>().AsEnumerable())
+        // Application
+        CompileApplication(p);
+    }
+
+    private void CompileAssign(SchemePair p)
+    {
+        CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>());
+
+        instructions.Push(new InstructionAssign(p.Cdr.To<SchemePair>().Car.To<SchemeSymbol>().Value));
+    }
+
+    private void CompileCondition(SchemePair p)
+    {
+        CompileDatum(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>());
+
+        var jumpWhenFalse = new InstructionConditionalJump(int.MaxValue, false);
+        instructions.Push(jumpWhenFalse);
+
+        CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>());
+        var jumpPassFalseBranch = new InstructionJump(int.MaxValue);
+        instructions.Push(jumpPassFalseBranch);
+
+        jumpWhenFalse.JumpTo = instructions.Next;
+        CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>());
+
+        jumpPassFalseBranch.Index = instructions.Next;
+    }
+
+    private void CompileClosure(SchemePair p)
+    {
+        var jump = new InstructionJump(0);
+        instructions.Push(jump);
+
+        var closure = new InstructionClosure();
+        closure.Parameters = p.Cdr.To<SchemePair>().Car.To<SchemePair>().AsEnumerable().Select(x => x.To<SchemeSymbol>().Value).ToArray();
+        closure.BodyIndex = instructions.Next;
+
+        foreach (var bodyExpression in p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().AsEnumerable())
+            CompileDatum(bodyExpression.To<SchemeDatum>());
+
+        instructions.Push(new InstructionReturn());
+
+        jump.Index = instructions.Next;
+
+        instructions.Push(closure);
+    }
+
+    private void CompileApplication(SchemePair p)
+    {
+        var frame = new InstructionFrame(0); // New Frame, return is the *next* instruction after we execute the procedure
+        instructions.Push(frame);
+
+        if (p.Cdr is SchemePair args)
+        {
+            foreach (var argument in args.AsEnumerable())
             {
-                argument.To<SchemeDatum>().Compile(instructions);
+                CompileDatum(argument.To<SchemeDatum>());
                 instructions.Push(new InstructionArgument());
             }
-
-            p.Car.To<SchemeDatum>().Compile(instructions);
-            instructions.Push(new InstructionApply());
-
-            frame.Next = instructions.Next;
-            /*
-            
-            (recur loop ([args (cdr x)]
-                         [c (compile (car x) ’(apply))])
-                (if (null? args)
-                    (if (tail? next) c (list ’frame next c))
-                    (loop (cdr args)
-                          (compile (car args) (list ’argument c))
-                    )
-                )
-            )
-
-            */
         }
+
+        // apply the args to the procedure
+        CompileDatum(p.Car.To<SchemeDatum>());
+        instructions.Push(new InstructionApply());
+
+        frame.ReturnTo = instructions.Next;
+    }
+
+    private void CompileContinuation(SchemePair p)
+    {
+        var ccjump = new InstructionJump(0);
+        instructions.Push(ccjump);
+
+        var nuateClosureIndex = instructions.Next;
+
+        var ccclosure = new InstructionClosure();
+        ccclosure.Parameters = new string[] { "v" };
+        ccclosure.BodyIndex = instructions.Next;
+
+        instructions.Push(new InstructionNuate());
+        instructions.Push(new InstructionReturn());
+
+        ccjump.Index = instructions.Next;
+
+        var ccframe = new InstructionFrame(0); // Continuation
+        instructions.Push(ccframe);
+
+        instructions.Push(new InstructionConti(nuateClosureIndex));
+        instructions.Push(new InstructionArgument());
+
+        CompileDatum(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>());
+        instructions.Push(new InstructionApply());
+
+        ccframe.ReturnTo = instructions.Next;
     }
 }

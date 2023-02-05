@@ -41,11 +41,6 @@ public sealed class SchemeSymbol : SchemeDatum
         return symbol;
     }
 
-    public override void Compile(InstructionList instructions)
-    {
-        instructions.Push(new InstructionRefer(Value));
-    }
-
     public static class Known
     {
         public static readonly SchemeSymbol Quote = FromString("quote");

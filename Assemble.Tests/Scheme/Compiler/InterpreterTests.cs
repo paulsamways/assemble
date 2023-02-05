@@ -81,10 +81,10 @@ public class InterpreterTests
     {
         var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (fib) (set! fib (lambda (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 5)) '())")) as SchemeNumber;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (fib) (set! fib (lambda (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 15)) '())")) as SchemeNumber;
 
         Assert.NotNull(result);
-        Assert.Equal(5, result.Value);
+        Assert.Equal(610, result.Value);
     }
 
     [Fact]
