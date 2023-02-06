@@ -74,8 +74,8 @@ public static class SchemeBuiltinProcedures
     public static readonly Func<Environment, SchemeObject[], SchemeObject> Divide
         = SchemeBuiltinProcedure.NAry<SchemeNumber, decimal>((a, b) => a / b);
 
-    [SchemeBuiltinProcedure("inc")]
-    public const string Inc = "(lambda (a) (+ a 1))";
+    // [SchemeBuiltinProcedure("inc")]
+    // public const string Inc = "(lambda (a) (+ a 1))";
 
     [SchemeBuiltinProcedure("<")]
     public static readonly Func<Environment, SchemeObject[], SchemeObject> LessThan

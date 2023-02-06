@@ -4,17 +4,25 @@ namespace Assemble.Scheme.Compiler;
 
 public class Interpreter
 {
-    private SchemeObject _accumulator = SchemeUndefined.Value;
+    public event EventHandler? Step;
+
+    protected virtual void OnStep(EventArgs e)
+    {
+        Step?.Invoke(this, e);
+    }
 
     public Interpreter(Environment? e = null)
     {
         Environment = e ?? Environment.Base();
+        Accumulator = SchemeUndefined.Value;
         Ribs = new List<SchemeObject>();
         Instructions = new InstructionList();
         Continuations = new Dictionary<int, Frame>();
     }
 
     public InstructionList Instructions { get; }
+
+    public SchemeObject Accumulator { get; set; }
 
     public Environment Environment { get; private set; }
 
@@ -24,9 +32,9 @@ public class Interpreter
 
     public Dictionary<int, Frame> Continuations { get; set; }
 
-    public int Next { get; set; }
+    public Instruction? Next { get; set; }
 
-    public void Apply(Environment e, int next)
+    public void Apply(Environment e, Instruction next)
     {
         Environment = e;
         Ribs = new List<SchemeObject>();
@@ -46,7 +54,7 @@ public class Interpreter
         StackFrame = frame;
     }
 
-    public void Frame(int next)
+    public void Frame(Instruction next)
     {
         StackFrame = new Frame(
             Environment,
@@ -70,37 +78,26 @@ public class Interpreter
         StackFrame = StackFrame.Parent;
     }
 
-    public void Load(SchemeDatum input)
-    {
-        var compiler = new Compiler(Instructions);
-        compiler.Compile(input);
-    }
-
     public SchemeObject Run(SchemeDatum input)
     {
-        Load(input);
-        return Run();
-    }
+        var compiler = new Compiler(Instructions);
+        Next = compiler.Compile(input);
 
-    public SchemeObject Run()
-    {
-        var xs = Instructions.ToArray();
-
-        while (Next < xs.Length)
+        while (Next is not null)
         {
-            var n = Next;
-            Next++;
+            OnStep(EventArgs.Empty);
 
             try
             {
-                _accumulator = xs[n].Execute(_accumulator, this);
+                Next.Execute(this);
             }
             catch (Exception e)
             {
-                throw new Exception($"Runtime error at instruction {n}", e);
+                throw new Exception($"Runtime error at instruction {Next}", e);
+
             }
         }
 
-        return _accumulator;
+        return Accumulator;
     }
 }

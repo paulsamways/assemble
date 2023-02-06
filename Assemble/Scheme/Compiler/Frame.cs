@@ -1,10 +1,11 @@
 using Assemble.Scheme.Compiler;
+using Assemble.Scheme.Compiler.Instructions;
 
 namespace Assemble.Scheme.Compiler;
 
 public class Frame
 {
-    public Frame(Environment e, List<SchemeObject> ribs, int next, Frame? parent = null)
+    public Frame(Environment e, List<SchemeObject> ribs, Instruction next, Frame? parent = null)
     {
         Environment = e;
         Ribs = ribs;
@@ -16,7 +17,7 @@ public class Frame
 
     public List<SchemeObject> Ribs { get; set; }
 
-    public int Next { get; set; }
+    public Instruction Next { get; set; }
 
     public Frame? Parent { get; set; }
 }

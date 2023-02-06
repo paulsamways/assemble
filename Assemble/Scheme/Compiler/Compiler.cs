@@ -11,154 +11,111 @@ public class Compiler
         this.instructions = instructions ?? new InstructionList();
     }
 
-    public void Compile(SchemeDatum o)
+    public Instruction Compile(SchemeDatum o)
     {
-        CompileDatum(o);
-
-        instructions.Push(new InstructionHalt());
+        return CompileDatum(o, new InstructionHalt());
     }
 
-    private void CompileDatum(SchemeDatum x)
+    private Instruction CompileDatum(SchemeDatum x, Instruction next)
     {
         if (x is SchemeSymbol s)
-            CompileReference(s);
+            return CompileReference(s, next);
         else if (x is SchemePair p)
-            CompilePair(p);
+            return CompilePair(p, next);
         else
-            CompileConstant(x);
+            return CompileConstant(x, next);
     }
 
-    private void CompileReference(SchemeSymbol s)
+    private Instruction CompileReference(SchemeSymbol s, Instruction next)
     {
-        instructions.Push(new InstructionRefer(s.Value));
+        return new InstructionRefer(s.Value, next);
     }
 
-    private void CompileConstant(SchemeDatum x)
+    private Instruction CompileConstant(SchemeDatum x, Instruction next)
     {
-        instructions.Push(new InstructionConstant(x));
+        return new InstructionConstant(x, next);
     }
 
-    private void CompilePair(SchemePair p)
+    private Instruction CompilePair(SchemePair p, Instruction next)
     {
         if (p.Car is SchemeSymbol s)
         {
             switch (s.Value)
             {
                 case "quote":
-                    CompileConstant(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>());
-                    return;
+                    return CompileConstant(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>(), next);
                 case "set!":
-                    CompileAssign(p);
-                    return;
+                    return CompileSet(p, next);
                 case "if":
-                    CompileCondition(p);
-                    return;
+                    return CompileIf(p, next);
                 case "lambda":
-                    CompileClosure(p);
-                    return;
+                    return CompileClosure(p, next);
                 case "call/cc":
                 case "call-with-current-continuation":
-                    CompileContinuation(p);
-                    return;
+                    return CompileContinuation(p, next);
             }
         }
 
         // Application
-        CompileApplication(p);
+        return CompileApplication(p, next);
     }
 
-    private void CompileAssign(SchemePair p)
+    private Instruction CompileSet(SchemePair p, Instruction next)
     {
-        CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>());
+        var assign = new InstructionAssign(p.Cdr.To<SchemePair>().Car.To<SchemeSymbol>().Value, next);
 
-        instructions.Push(new InstructionAssign(p.Cdr.To<SchemePair>().Car.To<SchemeSymbol>().Value));
+        return CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>(), assign);
     }
 
-    private void CompileCondition(SchemePair p)
+    private Instruction CompileIf(SchemePair p, Instruction next)
     {
-        CompileDatum(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>());
+        var then = CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>(), next);
+        var @else = CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>(), next);
 
-        var jumpWhenFalse = new InstructionConditionalJump(int.MaxValue, false);
-        instructions.Push(jumpWhenFalse);
-
-        CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>());
-        var jumpPassFalseBranch = new InstructionJump(int.MaxValue);
-        instructions.Push(jumpPassFalseBranch);
-
-        jumpWhenFalse.JumpTo = instructions.Next;
-        CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car.To<SchemeDatum>());
-
-        jumpPassFalseBranch.Index = instructions.Next;
+        return CompileDatum(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>(), new InstructionTest(then, @else));
     }
 
-    private void CompileClosure(SchemePair p)
+    private Instruction CompileClosure(SchemePair p, Instruction next)
     {
-        var closure = new InstructionClosure();
-        instructions.Push(closure);
+        var parameters = p.Cdr.To<SchemePair>().Car.To<SchemePair>().AsEnumerable().Select(x => x.To<SchemeSymbol>().Value).ToArray();
+        Instruction body = new InstructionReturn();
 
-        var jump = new InstructionJump(0);
-        instructions.Push(jump);
+        foreach (var bodyExpression in p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().AsEnumerable().Reverse())
+            body = CompileDatum(bodyExpression.To<SchemeDatum>(), body);
 
-        closure.Parameters = p.Cdr.To<SchemePair>().Car.To<SchemePair>().AsEnumerable().Select(x => x.To<SchemeSymbol>().Value).ToArray();
-        closure.BodyIndex = instructions.Next;
-        closure.Body = p;
-
-        foreach (var bodyExpression in p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().AsEnumerable())
-            CompileDatum(bodyExpression.To<SchemeDatum>());
-
-        instructions.Push(new InstructionReturn());
-
-        jump.Index = instructions.Next;
+        return new InstructionClosure(parameters, body, next);
     }
 
-    private void CompileApplication(SchemePair p)
+    private Instruction CompileApplication(SchemePair p, Instruction next)
     {
-        // If the next instruction after this application is a return, then we don't need to push a frame, or return in the closure.
-
-        var frame = new InstructionFrame(0); // New Frame, ReturnTo is the *next* instruction after we execute the procedure
-        instructions.Push(frame);
+        // apply the args to the procedure
+        Instruction proc = CompileDatum(p.Car.To<SchemeDatum>(), new InstructionApply());
 
         if (p.Cdr is SchemePair args)
         {
-            foreach (var argument in args.AsEnumerable())
-            {
-                CompileDatum(argument.To<SchemeDatum>());
-                instructions.Push(new InstructionArgument());
-            }
+            foreach (var argument in args.AsEnumerable().Reverse())
+                proc = CompileDatum(argument.To<SchemeDatum>(), new InstructionArgument(proc));
         }
 
-        // apply the args to the procedure
-        CompileDatum(p.Car.To<SchemeDatum>());
-        instructions.Push(new InstructionApply());
+        if (next is InstructionReturn)
+            return proc;
 
-        frame.ReturnTo = instructions.Next;
+        return new InstructionFrame(next, proc);
     }
 
-    private void CompileContinuation(SchemePair p)
+    private Instruction CompileContinuation(SchemePair p, Instruction next)
     {
-        var ccjump = new InstructionJump(0);
-        instructions.Push(ccjump);
+        var conti = new InstructionConti(
+            new InstructionArgument(
+                CompileDatum(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>(),
+                    new InstructionApply()
+                )
+            )
+        );
 
-        var nuateClosureIndex = instructions.Next;
+        if (next is InstructionReturn)
+            return conti;
 
-        var ccclosure = new InstructionClosure();
-        ccclosure.Parameters = new string[] { "v" };
-        ccclosure.BodyIndex = instructions.Next;
-
-        instructions.Push(new InstructionNuate());
-        instructions.Push(new InstructionReturn());
-
-        ccjump.Index = instructions.Next;
-
-        var ccframe = new InstructionFrame(0); // Continuation
-        instructions.Push(ccframe);
-
-        instructions.Push(new InstructionConti(nuateClosureIndex));
-        instructions.Push(new InstructionArgument());
-
-        CompileDatum(p.Cdr.To<SchemePair>().Car.To<SchemeDatum>());
-        instructions.Push(new InstructionApply());
-
-        ccframe.ReturnTo = instructions.Next;
+        return new InstructionFrame(next, conti);
     }
 }

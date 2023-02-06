@@ -2,15 +2,17 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionArgument : Instruction
 {
-    public InstructionArgument()
+    public InstructionArgument(Instruction next)
     {
+        Next = next;
     }
 
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
-    {
-        interpreter.Ribs.Add(accumulator);
+    public Instruction Next { get; set; }
 
-        return accumulator;
+    public override void Execute(Interpreter interpreter)
+    {
+        interpreter.Ribs.Add(interpreter.Accumulator);
+        interpreter.Next = Next;
     }
 
     public override string ToString()

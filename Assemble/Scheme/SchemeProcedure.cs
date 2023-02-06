@@ -1,8 +1,10 @@
+using Assemble.Scheme.Compiler.Instructions;
+
 namespace Assemble.Scheme;
 
 public class SchemeProcedure : SchemeCallable
 {
-    public SchemeProcedure(Environment closure, string[] parameters, SchemeObject[] body)
+    public SchemeProcedure(Environment closure, string[] parameters, Instruction body)
     {
         Closure = closure;
         Parameters = parameters;
@@ -13,27 +15,26 @@ public class SchemeProcedure : SchemeCallable
 
     public string[] Parameters { get; init; }
 
-    public SchemeObject[] Body { get; init; }
-
-    public int BodyIndex { get; set; }
+    public Instruction Body { get; init; }
 
     public override string Name => "procedure";
 
     public override SchemeObject Call(Environment e, SchemeObject arguments)
     {
-        var closure = new Environment(Closure);
+        throw new NotImplementedException();
+        // var closure = new Environment(Closure);
 
-        var args = new List<SchemeObject>();
+        // var args = new List<SchemeObject>();
 
-        if (arguments is SchemePair p)
-            args.AddRange(p.AsEnumerable());
-        else if (arguments is not SchemeEmptyList)
-            args.Add(arguments);
+        // if (arguments is SchemePair p)
+        //     args.AddRange(p.AsEnumerable());
+        // else if (arguments is not SchemeEmptyList)
+        //     args.Add(arguments);
 
-        foreach (var (k, v) in Parameters.Zip(args))
-            closure.Set(SchemeSymbol.FromString(k), v.Evaluate(e));
+        // foreach (var (k, v) in Parameters.Zip(args))
+        //     closure.Set(SchemeSymbol.FromString(k), v.Evaluate(e));
 
-        return Body.Select(x => x.Evaluate(closure)).Last();
+        // return Body.Select(x => x.Evaluate(closure)).Last();
     }
 
     public override bool Equals(SchemeObject? other)

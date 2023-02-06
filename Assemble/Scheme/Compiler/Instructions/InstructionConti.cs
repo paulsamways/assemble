@@ -2,23 +2,22 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionConti : Instruction
 {
-    public InstructionConti(int nuateBodyIndex)
+    public InstructionConti(Instruction next)
     {
-        NuateBodyIndex = nuateBodyIndex;
+        Next = next;
     }
 
-    public int NuateBodyIndex { get; set; }
+    public Instruction Next { get; set; }
 
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
+    public override void Execute(Interpreter interpreter)
     {
-        return new SchemeContinuation(interpreter.StackFrame!, new Environment(interpreter.Environment), new string[] { "v" })
-        {
-            BodyIndex = NuateBodyIndex
-        };
+        interpreter.Accumulator = new SchemeProcedure(new Environment(), new string[] { "v" }, new InstructionNuate(interpreter.StackFrame!, "v"));
+
+        interpreter.Next = Next;
     }
 
     public override string ToString()
     {
-        return $"CONTI {NuateBodyIndex}";
+        return $"CONTI";
     }
 }

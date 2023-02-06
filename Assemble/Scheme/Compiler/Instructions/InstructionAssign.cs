@@ -2,18 +2,20 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionAssign : Instruction
 {
-    public InstructionAssign(string variable)
+    public InstructionAssign(string variable, Instruction next)
     {
         Variable = variable;
+        Next = next;
     }
 
     public string Variable { get; set; }
 
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
-    {
-        interpreter.Environment.Set(SchemeSymbol.FromString(Variable), accumulator);
+    public Instruction Next { get; set; }
 
-        return accumulator;
+    public override void Execute(Interpreter interpreter)
+    {
+        interpreter.Environment.Set(SchemeSymbol.FromString(Variable), interpreter.Accumulator);
+        interpreter.Next = Next;
     }
 
     public override string ToString()

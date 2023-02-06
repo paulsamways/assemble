@@ -2,26 +2,24 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionFrame : Instruction
 {
-    public InstructionFrame(int returnTo)
+    public InstructionFrame(Instruction @return, Instruction next)
     {
-        ReturnTo = returnTo;
+        Return = @return;
+        Next = next;
     }
 
-    public int ReturnTo { get; set; }
+    public Instruction Return { get; set; }
 
-    private static int FrameCount = 0;
+    public Instruction Next { get; set; }
 
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
+    public override void Execute(Interpreter interpreter)
     {
-        interpreter.Frame(ReturnTo);
-
-        System.Console.WriteLine("Frame #{0}", FrameCount++);
-
-        return accumulator;
+        interpreter.Frame(Return);
+        interpreter.Next = Next;
     }
 
     public override string ToString()
     {
-        return $"FRAME {ReturnTo}";
+        return $"FRAME";
     }
 }

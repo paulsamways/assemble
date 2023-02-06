@@ -2,17 +2,23 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionRefer : Instruction
 {
-    public InstructionRefer(string name)
+    public InstructionRefer(string name, Instruction next)
     {
         Name = name;
+        Next = next;
     }
 
     public string Name { get; }
 
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
+    public Instruction Next { get; set; }
+
+    public override void Execute(Interpreter interpreter)
     {
-        return interpreter.Environment.Get(SchemeSymbol.FromString(Name))
-            ?? throw new Exception($"Unbound symbol: {Name}");
+        interpreter.Accumulator =
+            interpreter.Environment.Get(SchemeSymbol.FromString(Name))
+                ?? throw new Exception($"Unbound symbol: {Name}");
+
+        interpreter.Next = Next;
     }
 
     public override string ToString()

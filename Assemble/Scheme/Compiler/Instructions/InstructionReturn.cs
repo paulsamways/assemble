@@ -2,15 +2,9 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionReturn : Instruction
 {
-    public InstructionReturn()
-    {
-    }
-
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
+    public override void Execute(Interpreter interpreter)
     {
         interpreter.Return();
-
-        return accumulator;
     }
 
     public override string ToString()

@@ -7,11 +7,12 @@ public sealed class SchemeBuiltinLambda : SchemeBuiltin
 
     public override SchemeObject Call(Environment e, SchemeObject arguments)
     {
-        var p = arguments.To<SchemePair>();
+        throw new NotImplementedException();
+        // var p = arguments.To<SchemePair>();
 
-        var parameters = p.Car.To<SchemePair>().AsEnumerable().Select(x => x.To<SchemeSymbol>().Value);
-        var body = p.Cdr.To<SchemePair>().Car;
+        // var parameters = p.Car.To<SchemePair>().AsEnumerable().Select(x => x.To<SchemeSymbol>().Value);
+        // var body = p.Cdr.To<SchemePair>().Car;
 
-        return new SchemeProcedure(e, parameters.ToArray(), new SchemeObject[] { body });
+        // return new SchemeProcedure(e, parameters.ToArray(), new SchemeObject[] { body });
     }
 }

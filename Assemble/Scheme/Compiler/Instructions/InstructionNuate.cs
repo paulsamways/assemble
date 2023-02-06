@@ -2,17 +2,26 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionNuate : Instruction
 {
-    public InstructionNuate()
+    public InstructionNuate(Frame frame, string variable)
     {
+        Frame = frame;
+        Variable = variable;
     }
 
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
-    {
-        var result = interpreter.Environment.Get(Scheme.SchemeSymbol.FromString("v")) ?? throw new Exception("missing v");
+    public Frame Frame { get; set; }
 
-        interpreter.Nuate(accumulator.To<SchemeContinuation>().Frame);
-        interpreter.Return();
-        return result;
+    public string Variable { get; set; }
+
+    public override void Execute(Interpreter interpreter)
+    {
+        interpreter.Accumulator = interpreter.Environment.Get(SchemeSymbol.FromString(Variable)) ?? throw new Exception($"missing {Variable}");
+        interpreter.Next = new InstructionReturn();
+        interpreter.Nuate(Frame);
+
+        // interpreter.Nuate(accumulator.To<SchemeContinuation>().Frame);
+        // interpreter.Return();
+
+        // return result;
     }
 
     public override string ToString()

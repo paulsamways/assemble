@@ -2,27 +2,29 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionClosure : Instruction
 {
-    public InstructionClosure()
+    public InstructionClosure(string[] parameters, Instruction body, Instruction next)
     {
-        Parameters = Array.Empty<string>();
+        Parameters = parameters;
+        Body = body;
+        Next = next;
     }
 
     public string[] Parameters { get; set; }
 
-    public int BodyIndex { get; set; }
+    public Instruction Next { get; set; }
 
-    public SchemeDatum? Body { get; set; }
+    public Instruction Body { get; set; }
 
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
+    public SchemeDatum? Source { get; set; }
+
+    public override void Execute(Interpreter interpreter)
     {
-        return new SchemeProcedure(interpreter.Environment, Parameters, Array.Empty<SchemeObject>())
-        {
-            BodyIndex = BodyIndex
-        };
+        interpreter.Accumulator = new SchemeProcedure(interpreter.Environment, Parameters, Body);
+        interpreter.Next = Next;
     }
 
     public override string ToString()
     {
-        return $"CLSR {BodyIndex} - {Body?.Write()}";
+        return $"CLSR {Source?.Write()}";
     }
 }

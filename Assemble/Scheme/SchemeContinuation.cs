@@ -1,11 +1,12 @@
 using Assemble.Scheme.Compiler;
+using Assemble.Scheme.Compiler.Instructions;
 
 namespace Assemble.Scheme;
 
 public class SchemeContinuation : SchemeProcedure
 {
-    public SchemeContinuation(Frame frame, Environment e, string[] parameters)
-        : base(e, parameters, Array.Empty<SchemeObject>())
+    public SchemeContinuation(Frame frame, Environment e, string[] parameters, Instruction body)
+        : base(e, parameters, body)
     {
         Frame = frame;
     }

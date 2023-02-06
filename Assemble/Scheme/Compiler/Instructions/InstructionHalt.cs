@@ -2,13 +2,9 @@ namespace Assemble.Scheme.Compiler.Instructions;
 
 public class InstructionHalt : Instruction
 {
-    public InstructionHalt()
+    public override void Execute(Interpreter interpreter)
     {
-    }
-
-    public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
-    {
-        return accumulator;
+        interpreter.Next = null;
     }
 
     public override string ToString()
