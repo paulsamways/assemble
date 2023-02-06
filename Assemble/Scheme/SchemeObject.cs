@@ -23,7 +23,6 @@ public abstract class SchemeObject : IEquatable<SchemeObject>
     public static implicit operator SchemeObject(Func<Environment, SchemeObject, SchemeObject> f)
         => new SchemeBuiltinProcedure((e, xs) => f(e, xs[0]));
 
-    public abstract SchemeObject Evaluate(Environment e);
 
     public abstract string Name { get; }
 

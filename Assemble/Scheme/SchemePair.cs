@@ -1,6 +1,3 @@
-using Assemble.Scheme.Compiler;
-using Assemble.Scheme.Compiler.Instructions;
-
 namespace Assemble.Scheme;
 
 public sealed class SchemePair : SchemeDatum
@@ -30,11 +27,6 @@ public sealed class SchemePair : SchemeDatum
             return $"({string.Join(' ', AsEnumerable().Select(x => x.Write()))})";
 
         return $"({Car.Write()} . {Cdr.Write()})";
-    }
-
-    public override SchemeObject Evaluate(Environment e)
-    {
-        return Car.Evaluate(e).To<SchemeCallable>().Call(e, Cdr);
     }
 
     public IEnumerable<SchemeObject> AsEnumerable()

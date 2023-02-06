@@ -24,12 +24,6 @@ public sealed class SchemeNumber : SchemeDatum, Wraps<SchemeNumber, decimal>
     public override bool Same(SchemeObject other)
         => Equals(other);
 
-
-    public override SchemeObject Evaluate(Environment e)
-    {
-        return this;
-    }
-
     public decimal Unwrap()
     {
         return Value;

@@ -81,11 +81,6 @@ public sealed class SchemeCharacter : SchemeDatum
     public override bool Same(SchemeObject other)
         => Equals(other);
 
-    public override SchemeObject Evaluate(Environment e)
-    {
-        return this;
-    }
-
     public override string Write()
     {
         const string prefix = "#\\";

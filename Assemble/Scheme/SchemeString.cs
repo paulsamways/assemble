@@ -21,9 +21,4 @@ public sealed class SchemeString : SchemeDatum
         // TODO: Escape specials
         return $"\"{Value}\"";
     }
-
-    public override SchemeObject Evaluate(Environment e)
-    {
-        return this;
-    }
 }

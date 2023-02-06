@@ -1,6 +1,6 @@
 namespace Assemble.Scheme;
 
-public sealed class SchemeBuiltinProcedure : SchemeBuiltin
+public sealed class SchemeBuiltinProcedure : SchemeObject
 {
     public SchemeBuiltinProcedure(Func<Environment, SchemeObject[], SchemeObject> func)
     {
@@ -13,15 +13,6 @@ public sealed class SchemeBuiltinProcedure : SchemeBuiltin
 
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeBuiltinProcedure p && Func == p.Func;
-
-    public override SchemeObject Call(Environment e, SchemeObject arguments)
-    {
-        return Func(e, arguments
-            .To<SchemePair>()
-            .AsEnumerable()
-            .Select(x => x.Evaluate(e))
-            .ToArray());
-    }
 
     public static Func<Environment, SchemeObject[], SchemeObject> Is<T>()
         where T : SchemeObject

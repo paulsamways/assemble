@@ -121,15 +121,15 @@ public static class SchemeBuiltinProcedures
             return SchemeUndefined.Value;
         });
 
-    [SchemeBuiltinProcedure("apply")]
-    public static SchemeObject Apply(Environment e, SchemeObject[] xs)
-    {
-        return xs[0].To<SchemeCallable>().Call(e, SchemePair.FromEnumerable(xs[1..]));
-    }
+    // [SchemeBuiltinProcedure("apply")]
+    // public static SchemeObject Apply(Environment e, SchemeObject[] xs)
+    // {
+    //     return xs[0].To<SchemeCallable>().Call(e, SchemePair.FromEnumerable(xs[1..]));
+    // }
 
-    [SchemeBuiltinProcedure("eval")]
-    public static SchemeObject Eval(Environment e, SchemeObject[] xs)
-    {
-        return xs[0].Evaluate(e);
-    }
+    // [SchemeBuiltinProcedure("eval")]
+    // public static SchemeObject Eval(Environment e, SchemeObject[] xs)
+    // {
+    //     return xs[0].Evaluate(e);
+    // }
 }

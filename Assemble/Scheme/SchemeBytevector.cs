@@ -16,7 +16,4 @@ public sealed class SchemeBytevector : SchemeDatum
 
     public override string Write()
         => $"u8({string.Join(" ", Value)})";
-
-    public override SchemeObject Evaluate(Environment e)
-        => this;
 }

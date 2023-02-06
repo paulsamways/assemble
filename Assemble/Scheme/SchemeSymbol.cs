@@ -26,13 +26,6 @@ public sealed class SchemeSymbol : SchemeDatum
         return Value;
     }
 
-    public override SchemeObject Evaluate(Environment e)
-    {
-        return e.Get(this) ?? throw new Exception($"unbound symbol: {Value}");
-    }
-
-
-
     public static SchemeSymbol FromString(string value)
     {
         if (!_interns.TryGetValue(value, out var symbol))

@@ -42,9 +42,9 @@ public class Environment
             var attr = t.GetCustomAttribute<SchemeBuiltinAttribute>();
             if (attr is not null)
             {
-                if (t.IsAssignableTo(typeof(SchemeBuiltin)))
+                if (t.IsAssignableTo(typeof(SchemeBuiltinProcedure)))
                 {
-                    var instance = (SchemeBuiltin)Activator.CreateInstance(t)!;
+                    var instance = (SchemeBuiltinProcedure)Activator.CreateInstance(t)!;
                     Set(SchemeSymbol.FromString(instance.Name), instance);
                 }
             }
@@ -83,7 +83,7 @@ public class Environment
 
                     if (fAttr is not null)
                     {
-                        SchemeCallable callable;
+                        SchemeObject callable;
 
                         if (field.FieldType == typeof(Func<Environment, SchemeObject[], SchemeObject>))
                         {
@@ -92,10 +92,10 @@ public class Environment
                             );
 
                         }
-                        else if (field.FieldType == typeof(string))
-                        {
-                            callable = Parser.Parse((string)field.GetValue(null)!).Evaluate(this).To<SchemeProcedure>();
-                        }
+                        // else if (field.FieldType == typeof(string))
+                        // {
+                        //     callable = Parser.Parse((string)field.GetValue(null)!).Evaluate(this).To<SchemeProcedure>();
+                        // }
                         else
                         {
                             throw new Exception("SchemeBuiltinProcedure can only be used on func or string");

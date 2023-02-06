@@ -21,10 +21,5 @@ public sealed class SchemeEmptyList : SchemeDatum
         return "()";
     }
 
-    public override SchemeObject Evaluate(Environment e)
-    {
-        return this;
-    }
-
     public static readonly SchemeEmptyList Value = new();
 }

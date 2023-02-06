@@ -33,11 +33,6 @@ public sealed class SchemeBoolean : SchemeDatum, Wraps<SchemeBoolean, bool>
     public override bool Same(SchemeObject other)
         => Equals(other);
 
-    public override SchemeObject Evaluate(Environment e)
-    {
-        return this;
-    }
-
     public bool Unwrap()
     {
         return Value;
