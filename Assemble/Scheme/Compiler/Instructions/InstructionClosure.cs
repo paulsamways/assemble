@@ -11,6 +11,8 @@ public class InstructionClosure : Instruction
 
     public int BodyIndex { get; set; }
 
+    public SchemeDatum? Body { get; set; }
+
     public override SchemeObject Execute(SchemeObject accumulator, Interpreter interpreter)
     {
         return new SchemeProcedure(interpreter.Environment, Parameters, Array.Empty<SchemeObject>())
@@ -21,6 +23,6 @@ public class InstructionClosure : Instruction
 
     public override string ToString()
     {
-        return $"CLSR {BodyIndex}";
+        return $"CLSR {BodyIndex} - {Body?.Write()}";
     }
 }

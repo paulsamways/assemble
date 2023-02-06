@@ -48,7 +48,7 @@ public class InterpreterTests
     {
         var interpreter = new Interpreter();
         output.WriteLine(interpreter.Instructions.ToString());
-        var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (a) a) 1)")) as SchemeNumber;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (a) ((lambda (b) b) a)) 1)")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);

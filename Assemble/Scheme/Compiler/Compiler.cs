@@ -93,12 +93,15 @@ public class Compiler
 
     private void CompileClosure(SchemePair p)
     {
+        var closure = new InstructionClosure();
+        instructions.Push(closure);
+
         var jump = new InstructionJump(0);
         instructions.Push(jump);
 
-        var closure = new InstructionClosure();
         closure.Parameters = p.Cdr.To<SchemePair>().Car.To<SchemePair>().AsEnumerable().Select(x => x.To<SchemeSymbol>().Value).ToArray();
         closure.BodyIndex = instructions.Next;
+        closure.Body = p;
 
         foreach (var bodyExpression in p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().AsEnumerable())
             CompileDatum(bodyExpression.To<SchemeDatum>());
@@ -106,13 +109,13 @@ public class Compiler
         instructions.Push(new InstructionReturn());
 
         jump.Index = instructions.Next;
-
-        instructions.Push(closure);
     }
 
     private void CompileApplication(SchemePair p)
     {
-        var frame = new InstructionFrame(0); // New Frame, return is the *next* instruction after we execute the procedure
+        // If the next instruction after this application is a return, then we don't need to push a frame, or return in the closure.
+
+        var frame = new InstructionFrame(0); // New Frame, ReturnTo is the *next* instruction after we execute the procedure
         instructions.Push(frame);
 
         if (p.Cdr is SchemePair args)
