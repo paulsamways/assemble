@@ -4,11 +4,8 @@ namespace Assemble.Scheme.Compiler;
 
 public class Compiler
 {
-    private readonly InstructionList instructions;
-
-    public Compiler(InstructionList? instructions = null)
+    public Compiler()
     {
-        this.instructions = instructions ?? new InstructionList();
     }
 
     public Instruction Compile(SchemeDatum o)

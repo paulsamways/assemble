@@ -92,7 +92,6 @@ public class InterpreterTests
     public void Set_Test()
     {
         var interpreter = new Interpreter();
-        output.WriteLine(interpreter.Instructions.ToString());
         var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (a) (set! a 2) a) 1)"));
 
         Assert.Equal(2, result.To<SchemeNumber>().Value);
@@ -102,7 +101,6 @@ public class InterpreterTests
     public void Builtin_Test()
     {
         var interpreter = new Interpreter();
-        output.WriteLine(interpreter.Instructions.ToString());
         var result = interpreter.Run((SchemeDatum)Parser.Parse("(null? '())")) as SchemeBoolean;
 
         Assert.NotNull(result);

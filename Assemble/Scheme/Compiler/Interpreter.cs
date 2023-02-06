@@ -16,11 +16,8 @@ public class Interpreter
         Environment = e ?? Environment.Base();
         Accumulator = SchemeUndefined.Value;
         Ribs = new List<SchemeObject>();
-        Instructions = new InstructionList();
         Continuations = new Dictionary<int, Frame>();
     }
-
-    public InstructionList Instructions { get; }
 
     public SchemeObject Accumulator { get; set; }
 
@@ -80,7 +77,7 @@ public class Interpreter
 
     public SchemeObject Run(SchemeDatum input)
     {
-        var compiler = new Compiler(Instructions);
+        var compiler = new Compiler();
         Next = compiler.Compile(input);
 
         while (Next is not null)
