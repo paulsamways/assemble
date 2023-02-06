@@ -4,19 +4,11 @@ namespace Assemble.Scheme.Compiler;
 
 public class Interpreter
 {
-    public event EventHandler? Step;
-
-    protected virtual void OnStep(EventArgs e)
-    {
-        Step?.Invoke(this, e);
-    }
-
     public Interpreter(Environment? e = null)
     {
         Environment = e ?? Environment.Base();
         Accumulator = SchemeUndefined.Value;
         Ribs = new List<SchemeObject>();
-        Continuations = new Dictionary<int, Frame>();
     }
 
     public SchemeObject Accumulator { get; set; }
@@ -27,23 +19,20 @@ public class Interpreter
 
     public Frame? StackFrame { get; set; }
 
-    public Dictionary<int, Frame> Continuations { get; set; }
-
     public Instruction? Next { get; set; }
+
+    public event EventHandler? Step;
+
+    protected virtual void OnStep(EventArgs e)
+    {
+        Step?.Invoke(this, e);
+    }
 
     public void Apply(Environment e, Instruction next)
     {
         Environment = e;
         Ribs = new List<SchemeObject>();
         Next = next;
-    }
-
-    public void Conti(int key)
-    {
-        if (StackFrame is null)
-            throw new Exception("no frame to capture");
-
-        Continuations[key] = StackFrame;
     }
 
     public void Nuate(Frame frame)

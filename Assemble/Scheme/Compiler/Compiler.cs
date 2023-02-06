@@ -4,10 +4,6 @@ namespace Assemble.Scheme.Compiler;
 
 public class Compiler
 {
-    public Compiler()
-    {
-    }
-
     public Instruction Compile(SchemeDatum o)
     {
         return CompileDatum(o, new InstructionHalt());

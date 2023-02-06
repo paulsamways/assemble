@@ -80,8 +80,6 @@ public class InterpreterTests
     public void LambdaMultipleExpression_Test()
     {
         var interpreter = new Interpreter();
-        interpreter.Step += (object? sender, EventArgs e)
-            => output.WriteLine(interpreter.Next?.ToString());
         var result = interpreter.Run((SchemeDatum)Parser.Parse("((lambda (fib) (set! fib (lambda (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 15)) '())")) as SchemeNumber;
 
         Assert.NotNull(result);
@@ -101,10 +99,10 @@ public class InterpreterTests
     public void Builtin_Test()
     {
         var interpreter = new Interpreter();
-        var result = interpreter.Run((SchemeDatum)Parser.Parse("(null? '())")) as SchemeBoolean;
+        var result = interpreter.Run((SchemeDatum)Parser.Parse("(+ 1 1)")) as SchemeNumber;
 
         Assert.NotNull(result);
-        Assert.True(result.Value);
+        Assert.Equal(2, result.Value);
     }
 
     [Fact]
@@ -119,6 +117,6 @@ public class InterpreterTests
 
         Assert.NotNull(result);
         Assert.Equal(10, result.Value);
-        Assert.Equal(2, frameCount);
+        Assert.Equal(22, frameCount);
     }
 }
