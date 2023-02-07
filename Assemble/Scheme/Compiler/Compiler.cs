@@ -70,10 +70,10 @@ public class Compiler
 
     private Instruction CompileClosure(SchemePair p, Instruction next)
     {
-        var parameters = p.Cdr.To<SchemePair>().Car.To<SchemePair>().AsEnumerable().Select(x => x.To<SchemeSymbol>().Value).ToArray();
+        var parameters = p.Cdr.To<SchemePair>().Car.To<SchemePair>().ToEnumerable(true).Select(x => x.To<SchemeSymbol>().Value).ToArray();
         Instruction body = new InstructionReturn();
 
-        foreach (var bodyExpression in p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().AsEnumerable().Reverse())
+        foreach (var bodyExpression in p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().ToEnumerable(true).Reverse())
             body = CompileDatum(bodyExpression.To<SchemeDatum>(), body);
 
         return new InstructionClosure(parameters, body, next);
@@ -86,7 +86,7 @@ public class Compiler
 
         if (p.Cdr is SchemePair args)
         {
-            foreach (var argument in args.AsEnumerable().Reverse())
+            foreach (var argument in args.ToEnumerable(true).Reverse())
                 proc = CompileDatum(argument.To<SchemeDatum>(), new InstructionArgument(proc));
         }
 

@@ -108,7 +108,7 @@ public class InterpreterTests
     }
 
     [Fact]
-    public void TCO_Test()
+    public void TailCallOptimisation_Test()
     {
         var interpreter = new Interpreter();
         var maxdepth = 0;

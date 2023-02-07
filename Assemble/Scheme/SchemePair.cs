@@ -12,9 +12,9 @@ public sealed class SchemePair : SchemeDatum
 
     public SchemeObject Cdr { get; set; }
 
-    public bool IsList => Cdr is SchemeEmptyList || (Cdr is SchemePair p && p.IsList);
+    public bool IsList => ToEnumerable().Last() is SchemeEmptyList;
 
-    public bool IsImproperList => Cdr is not SchemePair || (Cdr is SchemePair p && p.IsImproperList);
+    public bool IsImproperList => ToEnumerable().Last() is not SchemeEmptyList;
 
     public override string Name => "pair";
 
@@ -23,27 +23,32 @@ public sealed class SchemePair : SchemeDatum
 
     public override string Write()
     {
-        if (IsList)
-            return $"({string.Join(' ', AsEnumerable().Select(x => x.Write()))})";
+        var items = ToEnumerable().ToArray();
+        if (items[^1] is SchemeEmptyList)
+            return "(" + string.Join(" ", items[0..^1].Select(x => x.Write())) + ")";
 
         return $"({Car.Write()} . {Cdr.Write()})";
     }
 
-    public IEnumerable<SchemeObject> AsEnumerable()
+    public IEnumerable<SchemeObject> ToEnumerable(bool asList = false)
     {
         yield return Car;
 
         if (Cdr is SchemePair p)
         {
-            foreach (var cdr in p.AsEnumerable())
+            foreach (var cdr in p.ToEnumerable())
                 yield return cdr;
-        }
-        else if (Cdr is SchemeEmptyList)
-        {
-            yield break;
         }
         else
         {
+            if (asList)
+            {
+                if (Cdr is not SchemeEmptyList)
+                    throw new Exception("Pair was enumerated as a list, but is improper");
+
+                yield break;
+            }
+
             yield return Cdr;
         }
     }

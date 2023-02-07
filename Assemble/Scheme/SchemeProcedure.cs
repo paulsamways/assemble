@@ -19,7 +19,6 @@ public class SchemeProcedure : SchemeObject
 
     public override string Name => "procedure";
 
-
     public override bool Equals(SchemeObject? other)
         => false;
 }
