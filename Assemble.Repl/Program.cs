@@ -58,13 +58,8 @@ internal class Program
 
                 try
                 {
-                    interpreter.Load((SchemeDatum)Parser.Parse(input));
-
-                    foreach (var (i, x) in interpreter.Instructions.ToArray().Select((x, i) => (i, x)))
-                        System.Console.WriteLine("{0:0000}: {1}", i, x);
-
                     stopwatch.Start();
-                    var result = interpreter.Run();
+                    var result = interpreter.Run((SchemeDatum)Parser.Parse(input));
                     stopwatch.Stop();
 
                     if (result is not SchemeUndefined)

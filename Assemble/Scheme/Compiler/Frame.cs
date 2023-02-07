@@ -20,4 +20,7 @@ public class Frame
     public Instruction Next { get; set; }
 
     public Frame? Parent { get; set; }
+
+    public int Depth =>
+        1 + ((Parent?.Depth) ?? 0);
 }
