@@ -1,4 +1,4 @@
-# Scheme R⁷RS in C#
+# Assemble - a Scheme R⁷RS implementation in C#
 
 This project aims to implement a R⁷RS conformant Scheme interpreter in C# for the purposes of self-education.
 
