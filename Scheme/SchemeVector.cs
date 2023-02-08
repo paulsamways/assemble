@@ -17,4 +17,7 @@ public sealed class SchemeVector : SchemeDatum
 
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeVector p && p.Values.SequenceEqual(Values);
+
+    public override int GetHashCode()
+        => Values.GetHashCode();
 }

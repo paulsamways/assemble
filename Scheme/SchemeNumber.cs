@@ -1,5 +1,3 @@
-using Scheme.Compiler.Instructions;
-
 namespace Scheme;
 
 public sealed class SchemeNumber : SchemeDatum, Wraps<SchemeNumber, decimal>
@@ -13,21 +11,18 @@ public sealed class SchemeNumber : SchemeDatum, Wraps<SchemeNumber, decimal>
 
     public override string Name => "number";
 
+    public override bool Same(SchemeObject other)
+        => Equals(other);
+
     public static SchemeNumber Wrap(decimal value)
-    {
-        return new SchemeNumber(value);
-    }
+        => new(value);
+
+    public decimal Unwrap() => Value;
+
+    public override string ToString() => Value.ToString();
 
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeNumber b && b.Value == Value;
 
-    public override bool Same(SchemeObject other)
-        => Equals(other);
-
-    public decimal Unwrap()
-    {
-        return Value;
-    }
-
-    public override string ToString() => Value.ToString();
+    public override int GetHashCode() => Value.GetHashCode();
 }

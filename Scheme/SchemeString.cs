@@ -1,5 +1,3 @@
-using Scheme.Compiler.Instructions;
-
 namespace Scheme;
 
 public sealed class SchemeString : SchemeDatum
@@ -15,6 +13,9 @@ public sealed class SchemeString : SchemeDatum
 
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeString b && b.Value.Equals(Value);
+
+    public override int GetHashCode()
+        => Value.GetHashCode();
 
     public override string ToString()
     {

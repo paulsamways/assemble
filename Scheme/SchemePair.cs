@@ -18,18 +18,6 @@ public sealed class SchemePair : SchemeDatum
 
     public override string Name => "pair";
 
-    public override bool Equals(SchemeObject? other)
-        => other is not null && other is SchemePair p && p.Car.Equals(Car) && p.Cdr.Equals(Cdr);
-
-    public override string ToString()
-    {
-        var items = ToEnumerable().ToArray();
-        if (items[^1] is SchemeEmptyList)
-            return "(" + string.Join(" ", items[0..^1].Select(x => x.ToString())) + ")";
-
-        return $"({Car} . {Cdr})";
-    }
-
     public IEnumerable<SchemeObject> ToEnumerable(bool asList = false)
     {
         yield return Car;
@@ -52,6 +40,21 @@ public sealed class SchemePair : SchemeDatum
             yield return Cdr;
         }
     }
+
+    public override bool Equals(SchemeObject? other)
+       => other is not null && other is SchemePair p && p.Car.Equals(Car) && p.Cdr.Equals(Cdr);
+
+    public override string ToString()
+    {
+        var items = ToEnumerable().ToArray();
+        if (items[^1] is SchemeEmptyList)
+            return "(" + string.Join(" ", items[0..^1].Select(x => x.ToString())) + ")";
+
+        return $"({Car} . {Cdr})";
+    }
+
+    public override int GetHashCode()
+        => HashCode.Combine(Car, Cdr);
 
     public static SchemeObject FromEnumerable(IEnumerable<SchemeObject> values)
     {

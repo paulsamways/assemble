@@ -14,8 +14,8 @@ public sealed class SchemeCharacter : SchemeDatum
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeCharacter b && b.Value == Value;
 
-    public override bool Same(SchemeObject other)
-        => Equals(other);
+    public override int GetHashCode()
+        => Value.GetHashCode();
 
     public override string ToString()
     {
@@ -30,6 +30,9 @@ public sealed class SchemeCharacter : SchemeDatum
 
         return prefix + "x" + Convert.ToByte(Value).ToString("x2");
     }
+
+    public override bool Same(SchemeObject other)
+        => Equals(other);
 
     public static class Names
     {

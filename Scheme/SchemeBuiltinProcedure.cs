@@ -16,6 +16,8 @@ public sealed class SchemeBuiltinProcedure : SchemeObject
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeBuiltinProcedure p && Func == p.Func;
 
+    public override int GetHashCode() => Func.GetHashCode();
+
     public static Func<Environment, SchemeObject[], SchemeObject> Is<T>()
         where T : SchemeObject
         => Unary((x) => x is T);

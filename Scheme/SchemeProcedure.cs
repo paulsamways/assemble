@@ -21,4 +21,7 @@ public class SchemeProcedure : SchemeObject
 
     public override bool Equals(SchemeObject? other)
         => false;
+
+    public override int GetHashCode()
+        => HashCode.Combine(Closure, Parameters, Body);
 }

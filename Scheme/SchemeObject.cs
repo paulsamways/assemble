@@ -16,6 +16,8 @@ public abstract class SchemeObject : IEquatable<SchemeObject>
 
     public override string ToString() => $"<{Name}>";
 
+    public abstract override int GetHashCode();
+
     public abstract bool Equals(SchemeObject? other);
 
     public override bool Equals(object? obj)

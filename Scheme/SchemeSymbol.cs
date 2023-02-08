@@ -1,6 +1,3 @@
-using Scheme.Compiler;
-using Scheme.Compiler.Instructions;
-
 namespace Scheme;
 
 public sealed class SchemeSymbol : SchemeDatum
@@ -16,12 +13,9 @@ public sealed class SchemeSymbol : SchemeDatum
 
     public override string Name => "symbol";
 
-    public override bool Equals(SchemeObject? other)
-        => other is not null && other is SchemeSymbol b && b.Value.Equals(Value);
+
     public override bool Same(SchemeObject other)
         => Equals(other);
-
-    public override string ToString() => Value;
 
     public static SchemeSymbol FromString(string value)
     {
@@ -30,6 +24,14 @@ public sealed class SchemeSymbol : SchemeDatum
 
         return symbol;
     }
+
+    public override string ToString() => Value;
+
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeSymbol b && b.Value.Equals(Value);
+
+    public override int GetHashCode()
+        => Value.GetHashCode();
 
     public static class Known
     {
