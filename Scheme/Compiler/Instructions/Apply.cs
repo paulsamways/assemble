@@ -1,5 +1,11 @@
 namespace Scheme.Compiler.Instructions;
 
+/// <summary>
+/// The <c>Apply</c> instruction applies the closure in the accumulator to the list of values in the current
+/// rib. Precisely, this instruction extends the closure’s environment with the closure’s
+/// variable list and the current rib, sets the current environment to this new environment,
+/// sets the current rib to the empty list, and sets the next expression to the closure’s body
+/// </summary>
 public class Apply : Instruction
 {
     public override void Execute(VM vm)

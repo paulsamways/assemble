@@ -1,5 +1,8 @@
 namespace Scheme.Compiler.Instructions;
 
+/// <summary>
+/// The <c>Argument</c> instruction adds the value in the accumulator to the current rib and sets the next expression to <c>Next</c>.
+/// </summary>
 public class Argument : Instruction
 {
     public Argument(Instruction next)

@@ -1,5 +1,10 @@
 namespace Scheme.Compiler.Instructions;
 
+/// <summary>
+/// The <c>Nuate</c> instruction restores <c>Frame</c> to be the current stack, sets the accumulator
+/// to the value of <c>Variable</c> in the current environment, and sets the next expression to a
+/// <c>Return</c> instruction.
+/// </summary>
 public class Nuate : Instruction
 {
     public Nuate(Scheme.Compiler.Frame frame, string variable)

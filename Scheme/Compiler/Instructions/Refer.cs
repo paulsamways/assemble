@@ -1,5 +1,10 @@
 namespace Scheme.Compiler.Instructions;
 
+/// <summary>
+/// The <c>Refer</c> instruction finds the value of the variable <c>name</c> in the current
+/// environment, and places this value into the accumulator and sets the next expression to
+/// <c>Next</c>.
+/// </summary>
 public class Refer : Instruction
 {
     public Refer(string name, Instruction next)

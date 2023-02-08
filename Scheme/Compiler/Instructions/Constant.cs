@@ -1,5 +1,9 @@
 namespace Scheme.Compiler.Instructions;
 
+/// <summary>
+/// The <c>Constant</c> instruction places <c>Datum</c> into the accumulator and 
+/// sets the next expression to <c>Next</c>.
+/// </summary>
 public class Constant : Instruction
 {
     public Constant(SchemeDatum datum, Instruction next)
@@ -17,6 +21,4 @@ public class Constant : Instruction
         vm.Accumulator = Datum;
         vm.Next = Next;
     }
-
-    public override string ToString() => $"VAL {Datum}";
 }
