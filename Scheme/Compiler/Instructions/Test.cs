@@ -18,9 +18,4 @@ public class Test : Instruction
             ? Then
             : Else;
     }
-
-    public override string ToString()
-    {
-        return $"TEST";
-    }
 }

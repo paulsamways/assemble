@@ -18,8 +18,5 @@ public class Constant : Instruction
         vm.Next = Next;
     }
 
-    public override string ToString()
-    {
-        return $"VAL {Datum.Write()}";
-    }
+    public override string ToString() => $"VAL {Datum}";
 }

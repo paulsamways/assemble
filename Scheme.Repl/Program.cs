@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
-using Scheme;
 using Scheme.Compiler;
+
+namespace Scheme.Repl;
 
 public static class Program
 {
@@ -13,14 +14,14 @@ public static class Program
         ReadLine.AutoCompletionHandler = new AutoCompletionHandler(environment);
         ReadLine.HistoryEnabled = true;
 
-        Console.WriteLine("Scheme R7RS REPL");
         Console.Out.Flush();
 
         while (true)
         {
             stopwatch.Reset();
 
-            var input = ReadLine.Read("scheme> ");
+            var input = ReadLine.Read("λ > ");
+
             if (!string.IsNullOrEmpty(input))
             {
                 if (input == ":q")
@@ -33,11 +34,15 @@ public static class Program
                     stopwatch.Stop();
 
                     if (result is not SchemeUndefined)
-                        Console.WriteLine("------> {0} ({1}ms)", result.Write(), stopwatch.ElapsedMilliseconds);
+                    {
+                        Console.WriteLine("... {0} ({1}ms)", result, stopwatch.ElapsedMilliseconds);
+
+                        environment.Set(SchemeSymbol.FromString("$$"), result);
+                    }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("------! " + e);
+                    Console.WriteLine("--! " + e.Message);
                 }
 
             }

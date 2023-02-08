@@ -23,9 +23,4 @@ public class Apply : Instruction
             vm.Apply(e, procedure.Body);
         }
     }
-
-    public override string ToString()
-    {
-        return $"APP";
-    }
 }

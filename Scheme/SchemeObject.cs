@@ -12,6 +12,19 @@ public abstract class SchemeObject : IEquatable<SchemeObject>
         throw new Exception($"Type error: have {GetType()} but wanted {typeof(T)}");
     }
 
+    public abstract string Name { get; }
+
+    public override string ToString() => $"<{Name}>";
+
+    public abstract bool Equals(SchemeObject? other);
+
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || Equals(obj as SchemeObject);
+    }
+
+    public virtual bool Same(SchemeObject other) => ReferenceEquals(this, other);
+
     public static implicit operator SchemeObject(bool b) => SchemeBoolean.FromBoolean(b);
 
     public static implicit operator SchemeObject(string s) => new SchemeString(s);
@@ -24,26 +37,4 @@ public abstract class SchemeObject : IEquatable<SchemeObject>
 
     public static implicit operator SchemeObject(Func<Environment, SchemeObject, SchemeObject> f)
         => new SchemeBuiltinProcedure((e, xs) => f(e, xs[0]));
-
-
-    public abstract string Name { get; }
-
-    public override string ToString()
-    {
-        return Write();
-    }
-
-    public virtual string Write()
-    {
-        return $"<{Name}>";
-    }
-
-    public abstract bool Equals(SchemeObject? other);
-
-    public override bool Equals(object? obj)
-    {
-        return ReferenceEquals(this, obj) || Equals(obj as SchemeObject);
-    }
-
-    public virtual bool Same(SchemeObject other) => ReferenceEquals(this, other);
 }

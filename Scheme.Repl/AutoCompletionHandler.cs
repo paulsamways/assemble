@@ -1,3 +1,5 @@
+namespace Scheme.Repl;
+
 internal sealed class AutoCompletionHandler : IAutoCompleteHandler
 {
     private readonly string[] _globalBindings;

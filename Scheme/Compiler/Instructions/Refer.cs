@@ -20,9 +20,4 @@ public class Refer : Instruction
 
         vm.Next = Next;
     }
-
-    public override string ToString()
-    {
-        return $"REF {Name}";
-    }
 }

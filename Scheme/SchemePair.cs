@@ -21,13 +21,13 @@ public sealed class SchemePair : SchemeDatum
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemePair p && p.Car.Equals(Car) && p.Cdr.Equals(Cdr);
 
-    public override string Write()
+    public override string ToString()
     {
         var items = ToEnumerable().ToArray();
         if (items[^1] is SchemeEmptyList)
-            return "(" + string.Join(" ", items[0..^1].Select(x => x.Write())) + ")";
+            return "(" + string.Join(" ", items[0..^1].Select(x => x.ToString())) + ")";
 
-        return $"({Car.Write()} . {Cdr.Write()})";
+        return $"({Car} . {Cdr})";
     }
 
     public IEnumerable<SchemeObject> ToEnumerable(bool asList = false)

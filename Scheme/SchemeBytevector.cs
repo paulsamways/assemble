@@ -14,6 +14,6 @@ public sealed class SchemeBytevector : SchemeDatum
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeBytevector b && b.Value.SequenceEqual(Value);
 
-    public override string Write()
+    public override string ToString()
         => $"u8({string.Join(" ", Value)})";
 }

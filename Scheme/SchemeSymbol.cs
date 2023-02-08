@@ -21,10 +21,7 @@ public sealed class SchemeSymbol : SchemeDatum
     public override bool Same(SchemeObject other)
         => Equals(other);
 
-    public override string Write()
-    {
-        return Value;
-    }
+    public override string ToString() => Value;
 
     public static SchemeSymbol FromString(string value)
     {

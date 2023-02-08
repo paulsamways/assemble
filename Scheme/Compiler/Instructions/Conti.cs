@@ -15,9 +15,4 @@ public class Conti : Instruction
 
         vm.Next = Next;
     }
-
-    public override string ToString()
-    {
-        return $"CONTI";
-    }
 }

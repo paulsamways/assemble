@@ -2,6 +2,35 @@ namespace Scheme;
 
 public sealed class SchemeCharacter : SchemeDatum
 {
+    public SchemeCharacter(char value)
+    {
+        Value = value;
+    }
+
+    public char Value { get; init; }
+
+    public override string Name => "character";
+
+    public override bool Equals(SchemeObject? other)
+        => other is not null && other is SchemeCharacter b && b.Value == Value;
+
+    public override bool Same(SchemeObject other)
+        => Equals(other);
+
+    public override string ToString()
+    {
+        const string prefix = "#\\";
+
+        var name = Names.Lookup(Value);
+        if (name is not null)
+            return prefix + name;
+
+        if (char.IsAsciiLetterOrDigit(Value))
+            return prefix + Value;
+
+        return prefix + "x" + Convert.ToByte(Value).ToString("x2");
+    }
+
     public static class Names
     {
         private static readonly Dictionary<string, char> _nameToCharLookup = new()
@@ -64,34 +93,5 @@ public sealed class SchemeCharacter : SchemeDatum
 
         public const string Tab = "tab";
         public const char TabChar = '\u0009';
-    }
-
-    public SchemeCharacter(char value)
-    {
-        Value = value;
-    }
-
-    public char Value { get; init; }
-
-    public override string Name => "character";
-
-    public override bool Equals(SchemeObject? other)
-        => other is not null && other is SchemeCharacter b && b.Value == Value;
-
-    public override bool Same(SchemeObject other)
-        => Equals(other);
-
-    public override string Write()
-    {
-        const string prefix = "#\\";
-
-        var name = Names.Lookup(Value);
-        if (name is not null)
-            return prefix + name;
-
-        if (char.IsAsciiLetterOrDigit(Value))
-            return prefix + Value;
-
-        return prefix + "x" + Convert.ToByte(Value).ToString("x2");
     }
 }

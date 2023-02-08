@@ -6,9 +6,4 @@ public class Return : Instruction
     {
         vm.Return();
     }
-
-    public override string ToString()
-    {
-        return $"RET";
-    }
 }

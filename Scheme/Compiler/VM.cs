@@ -71,15 +71,7 @@ public class VM
         {
             OnStep(EventArgs.Empty);
 
-            try
-            {
-                Next.Execute(this);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Runtime error at instruction {Next}", e);
-
-            }
+            Next.Execute(this);
         }
 
         return Accumulator;

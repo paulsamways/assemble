@@ -17,9 +17,4 @@ public class Assign : Instruction
         vm.Environment.Set(SchemeSymbol.FromString(Variable), vm.Accumulator);
         vm.Next = Next;
     }
-
-    public override string ToString()
-    {
-        return $"ASN";
-    }
 }

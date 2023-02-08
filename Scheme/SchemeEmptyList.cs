@@ -16,10 +16,7 @@ public sealed class SchemeEmptyList : SchemeDatum
 
     public override string Name => "null";
 
-    public override string Write()
-    {
-        return "()";
-    }
+    public override string ToString() => "()";
 
     public static readonly SchemeEmptyList Value = new();
 }

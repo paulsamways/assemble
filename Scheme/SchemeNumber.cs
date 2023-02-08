@@ -29,8 +29,5 @@ public sealed class SchemeNumber : SchemeDatum, Wraps<SchemeNumber, decimal>
         return Value;
     }
 
-    public override string Write()
-    {
-        return Value.ToString();
-    }
+    public override string ToString() => Value.ToString();
 }

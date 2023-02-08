@@ -14,9 +14,4 @@ public class Argument : Instruction
         vm.Ribs.Add(vm.Accumulator);
         vm.Next = Next;
     }
-
-    public override string ToString()
-    {
-        return $"ARG";
-    }
 }

@@ -16,7 +16,7 @@ public sealed class SchemeString : SchemeDatum
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeString b && b.Value.Equals(Value);
 
-    public override string Write()
+    public override string ToString()
     {
         // TODO: Escape specials
         return $"\"{Value}\"";

@@ -18,9 +18,4 @@ public class Nuate : Instruction
         vm.Next = new Return();
         vm.Nuate(Frame);
     }
-
-    public override string ToString()
-    {
-        return $"NUATE";
-    }
 }

@@ -12,8 +12,8 @@ public sealed class SchemeVector : SchemeDatum
     public override string Name
         => "vector";
 
-    public override string Write()
-        => $"#({string.Join(" ", Values.Select(x => x.Write()))})";
+    public override string ToString()
+        => $"#({string.Join(" ", Values.Select(x => x.ToString()))})";
 
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeVector p && p.Values.SequenceEqual(Values);

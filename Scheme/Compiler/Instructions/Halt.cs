@@ -6,9 +6,4 @@ public class Halt : Instruction
     {
         vm.Next = null;
     }
-
-    public override string ToString()
-    {
-        return $"HALT";
-    }
 }

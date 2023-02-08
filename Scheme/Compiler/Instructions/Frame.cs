@@ -17,9 +17,4 @@ public class Frame : Instruction
         vm.Frame(Return);
         vm.Next = Next;
     }
-
-    public override string ToString()
-    {
-        return $"FRAME";
-    }
 }

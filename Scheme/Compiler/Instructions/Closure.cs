@@ -25,6 +25,6 @@ public class Closure : Instruction
 
     public override string ToString()
     {
-        return $"CLSR {Source?.Write()}";
+        return $"CLSR {Source}";
     }
 }

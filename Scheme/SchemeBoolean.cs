@@ -22,10 +22,7 @@ public sealed class SchemeBoolean : SchemeDatum, Wraps<SchemeBoolean, bool>
             ? False : True;
     }
 
-    public override string Write()
-    {
-        return Value ? "#t" : "#f";
-    }
+    public override string ToString() => Value ? "#t" : "#f";
 
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeBoolean b && b.Value == Value;
