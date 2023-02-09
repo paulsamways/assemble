@@ -48,6 +48,14 @@ public static class SchemeBuiltinProcedures
     public static readonly Func<Environment, SchemeObject[], SchemeObject> IsNumberEq
         = SchemeBuiltinProcedure.IsEq<SchemeNumber>();
 
+    [SchemeBuiltinProcedure("even?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> Even
+        = SchemeBuiltinProcedure.Unary<SchemeNumber, decimal, SchemeBoolean, bool>(x => x % 2 == 0);
+
+    [SchemeBuiltinProcedure("odd?")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> Odd
+        = SchemeBuiltinProcedure.Unary<SchemeNumber, decimal, SchemeBoolean, bool>(x => x % 2 != 0);
+
     [SchemeBuiltinProcedure("eqv?")]
     public static readonly Func<Environment, SchemeObject[], SchemeObject> IsEqv
         = SchemeBuiltinProcedure.Binary((x, y) => x.Same(y));
