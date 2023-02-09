@@ -5,7 +5,7 @@ This project aims to implement a R⁷RS conformant Scheme interpreter in C# for 
 ## Getting Started
 
 1. **Prerequisites**: You will need a working .NET 7.0+ development environment.
-2. Run the read-eval-print-loop project, `cd Scheme.Repl && dotnet run`.
+2. Run the read-eval-print-loop project, `cd src/Scheme.Repl && dotnet run`.
 
 ## References
 
