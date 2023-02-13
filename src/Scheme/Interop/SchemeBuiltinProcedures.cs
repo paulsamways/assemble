@@ -84,6 +84,10 @@ public static class SchemeBuiltinProcedures
     public static readonly Func<Environment, SchemeObject[], SchemeObject> Divide
         = SchemeBuiltinProcedure.NAry<SchemeNumber, decimal>((a, b) => a / b);
 
+    [SchemeBuiltinProcedure("mod")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> Mod
+        = SchemeBuiltinProcedure.Binary<SchemeNumber, SchemeNumber, SchemeNumber>((x, y) => new SchemeNumber(x.Value % y.Value));
+
     [SchemeBuiltinProcedure("<")]
     public static readonly Func<Environment, SchemeObject[], SchemeObject> LessThan
          = SchemeBuiltinProcedure.Binary<SchemeNumber, decimal, SchemeNumber, decimal, SchemeBoolean, bool>((a, b) => a < b);
@@ -141,4 +145,12 @@ public static class SchemeBuiltinProcedures
     // {
     //     return xs[0].To<SchemeCallable>().Call(e, SchemePair.FromEnumerable(xs[1..]));
     // }
+
+    [SchemeBuiltinProcedure("range")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> Range
+        = SchemeBuiltinProcedure.Binary<SchemeNumber, SchemeNumber, SchemeObject>((x, y) =>
+            Enumerable
+                .Range((int)x.Value, (int)y.Value)
+                .Reverse()
+                .Aggregate((SchemeObject)SchemeEmptyList.Value, (xs, x) => new SchemePair(new SchemeNumber(x), xs)));
 }
