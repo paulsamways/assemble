@@ -21,6 +21,14 @@ An excellent, non-academic introduction on how to implement a programming langua
 [Write Yourself a Scheme in 48 Hours](https://en.wikibooks.org/wiki/Write_Yourself_a_Scheme_in_48_Hours):
 Fun guide on how to implement Scheme in the Haskell language using a tree-walk interpreter.
 
+[A Simple Scheme Compiler](https://www.cs.rpi.edu/academics/courses/fall00/ai/scheme/reference/schintro-v14/schintro_142.html#SEC271)
+
+### Macros
+
+[Writing Hygienic Macros in Scheme with Syntax-Case](https://legacy.cs.indiana.edu/ftp/techreports/TR356.pdf)
+
+[Syntactic Closures](https://apps.dtic.mil/dtic/tr/fulltext/u2/a195921.pdf)
+
 ## License
 
 Copyright (C) 2023 Paul Samways
