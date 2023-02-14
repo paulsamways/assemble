@@ -130,7 +130,11 @@ public static class SchemeBuiltinProcedures
 
     [SchemeBuiltinProcedure("read")]
     public static readonly Func<Environment, SchemeObject[], SchemeObject> Read
-        = SchemeBuiltinProcedure.Unary<SchemeString, SchemeObject>((x) => Parser.Parse(x.Value));
+        = SchemeBuiltinProcedure.Unary<SchemeString, SchemeObject>((x) => new Parser().Parse(x.Value));
+
+    [SchemeBuiltinProcedure("read-syntax")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> ReadSyntax
+        = SchemeBuiltinProcedure.Unary<SchemeString, SchemeObject>((x) => new Parser(true).Parse(x.Value));
 
     [SchemeBuiltinProcedure("eval")]
     public static readonly Func<Environment, SchemeObject[], SchemeObject> Eval

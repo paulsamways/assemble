@@ -30,7 +30,7 @@ public static class Program
                 try
                 {
                     stopwatch.Start();
-                    var result = vm.Run((SchemeDatum)Parser.Parse(input));
+                    var result = vm.Run((SchemeDatum)new Parser().Parse(input));
                     stopwatch.Stop();
 
                     if (result is not SchemeUndefined)

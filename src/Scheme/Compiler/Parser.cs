@@ -4,10 +4,20 @@ using static Pidgin.Parser;
 
 namespace Scheme.Compiler;
 
-public static class Parser
+public class Parser
 {
-    public static SchemeObject Parse(string input)
+    private readonly bool _asSyntaxObject;
+    private string _source = string.Empty;
+
+    public Parser(bool asSyntaxObject = false)
     {
+        _asSyntaxObject = asSyntaxObject;
+    }
+
+    public SchemeObject Parse(string input)
+    {
+        _source = input;
+
         return (
             from _ in SkipWhitespaces
             from e in DatumParser
@@ -17,7 +27,7 @@ public static class Parser
     }
 
     private static Parser<char, T> Token<T>(Parser<char, T> p)
-        => Try(p).Before(SkipWhitespaces);
+        => Try(p);
 
     /// <summary>
     /// Parser for the datum production rule:
@@ -25,8 +35,17 @@ public static class Parser
     /// 〈datum〉 −→ 〈simple datum〉| 〈compound datum〉| 〈label〉 = 〈datum〉 | 〈label〉 #
     /// </code>
     /// </summary>
-    private static Parser<char, SchemeObject> DatumParser =>
-        OneOf(SimpleDatum, CompoundDatum);
+    private Parser<char, SchemeObject> DatumParser =>
+        from pos in Parser<char>.CurrentPos
+        from start in Parser<char>.CurrentOffset
+        from x in Parser<char>.CurrentSourcePosDelta
+        from datum in OneOf(SimpleDatum, CompoundDatum)
+        from end in Parser<char>.CurrentOffset
+        from _ in SkipWhitespaces
+        select _asSyntaxObject
+            ? new SchemeSyntaxObject((SchemeDatum)datum, new SourceInfo(_source, pos.Line, pos.Col, start, end - start))
+            : datum;
+
 
     #region Simple Datums
 
@@ -41,7 +60,7 @@ public static class Parser
     ///                     | 〈bytevector〉
     /// </code>
     /// </summary>
-    private static Parser<char, SchemeObject> SimpleDatum =>
+    private Parser<char, SchemeObject> SimpleDatum =>
         OneOf(BooleanParser, NumberParser, CharacterParser, StringParser, SymbolParser, ByteVectorParser);
 
     /// <summary>
@@ -141,7 +160,7 @@ public static class Parser
     ///                 | 〈peculiar identifier〉
     /// </code>
     /// </summary>
-    private static Parser<char, string> IdentifierParser =>
+    private Parser<char, string> IdentifierParser =>
         Try(PeculiarIdentifier).Or(
             from x in InitialParser
             from xs in SubsequentParser.ManyString()
@@ -154,7 +173,7 @@ public static class Parser
     /// 〈initial〉 −→ 〈letter〉 | 〈special initial〉
     /// </code>
     /// </summary>
-    private static Parser<char, char> InitialParser =>
+    private Parser<char, char> InitialParser =>
         LetterParser.Or(SpecialInitialParser);
 
     /// <summary>
@@ -163,7 +182,7 @@ public static class Parser
     /// 〈letter〉 −→ a | b | c | ... | z | A | B | C | ... | Z
     /// </code>
     /// </summary>
-    private static Parser<char, char> LetterParser =>
+    private Parser<char, char> LetterParser =>
         Parser<char>.Token(char.IsAsciiLetter);
 
     /// <summary>
@@ -172,7 +191,7 @@ public static class Parser
     /// 〈special initial〉 −→ ! | $ | % | & | * | / | : | < | = | > | ? | ^ | _ | ~
     /// </code>
     /// </summary>
-    private static Parser<char, char> SpecialInitialParser =>
+    private Parser<char, char> SpecialInitialParser =>
         OneOf("!$%&*/:<=>?^_~");
 
     /// <summary>
@@ -181,7 +200,7 @@ public static class Parser
     /// 〈subsequent〉 −→ 〈initial〉 | 〈digit〉 | 〈special subsequent
     /// </code>
     /// </summary>
-    private static Parser<char, char> SubsequentParser =>
+    private Parser<char, char> SubsequentParser =>
         InitialParser.Or(Digit).Or(SpecialSubsequentParser);
 
     /// <summary>
@@ -190,7 +209,7 @@ public static class Parser
     /// 〈special subsequent〉 −→ 〈explicit sign〉 | . | @
     /// </code>
     /// </summary>
-    private static Parser<char, char> SpecialSubsequentParser =>
+    private Parser<char, char> SpecialSubsequentParser =>
         ExplicitSignParser.Or(OneOf("@."));
 
     /// <summary>
@@ -199,7 +218,7 @@ public static class Parser
     /// 〈explicit sign〉 −→ + | -
     /// </code>
     /// </summary>
-    private static Parser<char, char> ExplicitSignParser =>
+    private Parser<char, char> ExplicitSignParser =>
         OneOf("+-");
 
     /// <summary>
@@ -211,7 +230,7 @@ public static class Parser
     ///                         | . 〈dot subsequent〉 〈subsequent〉
     /// </code>
     /// </summary>
-    private static Parser<char, string> PeculiarIdentifier =>
+    private Parser<char, string> PeculiarIdentifier =>
         from x in ExplicitSignParser
         select x.ToString();
 
@@ -221,7 +240,7 @@ public static class Parser
     /// 〈symbol〉 −→ 〈identifier〉
     /// </code>
     /// </summary>
-    private static Parser<char, SchemeObject> SymbolParser => Token(
+    private Parser<char, SchemeObject> SymbolParser => Token(
         from n in IdentifierParser
         select (SchemeObject)SchemeSymbol.FromString(n)
     ).Labelled("symbol");
@@ -232,12 +251,11 @@ public static class Parser
     /// 〈bytevector〉 −→ #u8(〈byte〉*)
     /// </code>
     /// </summary>
-    private static Parser<char, SchemeObject> ByteVectorParser => Token(
-        from xs in
-            String("#u8").Then(
-                ByteParser
-                    .Separated(Whitespaces)
-                .Between(Char('('), Char(')')))
+    private Parser<char, SchemeObject> ByteVectorParser => Token(
+        from _u8 in String("#u8")
+        from _o in Char('(').Then(SkipWhitespaces)
+        from xs in ByteParser.SeparatedAndOptionallyTerminated(Whitespaces)
+        from _c in Char(')')
         select (SchemeObject)new SchemeBytevector(xs.ToArray())
     ).Labelled("bytevector");
 
@@ -260,7 +278,7 @@ public static class Parser
     /// 〈compound datum〉 −→ 〈list〉 | 〈vector〉 | 〈abbreviation〉
     /// </code>
     /// </summary>
-    private static Parser<char, SchemeObject> CompoundDatum =>
+    private Parser<char, SchemeObject> CompoundDatum =>
         OneOf(ListParser, VectorParser, AbbreviationParser);
 
     /// <summary>
@@ -269,18 +287,19 @@ public static class Parser
     /// 〈list〉 −→ (〈datum〉*) | (〈datum〉+ . 〈datum〉)
     /// </code>
     /// </summary>
-    private static Parser<char, SchemeObject> ListParser => Token(
+    private Parser<char, SchemeObject> ListParser => Token(
         OneOf(EmptyListParser, ListOrPairParser)
     ).Labelled("list");
 
-    private static Parser<char, SchemeObject> EmptyListParser =>
+    private Parser<char, SchemeObject> EmptyListParser =>
         Token(Whitespaces.Between(Char('('), Char(')')))
             .Select(_ => (SchemeObject)SchemeEmptyList.Value);
 
-    private static Parser<char, SchemeObject> ListOrPairParser =>
-        from _open in Token(Char('('))
+    private Parser<char, SchemeObject> ListOrPairParser => Token(
+        from _open in Char('(')
+        from _ in SkipWhitespaces
         from cars in DatumParser.AtLeastOnce()
-        from cdr in Try(Token(Char('.')).Then(DatumParser)).Optional()
+        from cdr in Try(Char('.').Then(SkipWhitespaces).Then(DatumParser)).Optional()
         from _close in Char(')')
         select cdr.HasValue
             ? new SchemePair(
@@ -288,7 +307,8 @@ public static class Parser
                     ? cars.Single()
                     : SchemePair.FromEnumerable(cars),
                 cdr.Value)
-            : SchemePair.FromEnumerable(cars);
+            : SchemePair.FromEnumerable(cars)
+    );
 
     /// <summary>
     /// Parser for the vector production rule:
@@ -296,8 +316,9 @@ public static class Parser
     /// 〈vector〉 −→ #(〈datum〉*)
     /// </code>
     /// </summary>
-    private static Parser<char, SchemeObject> VectorParser => Token(
-        from _open in Token(String("#("))
+    private Parser<char, SchemeObject> VectorParser => Token(
+        from _open in String("#(")
+        from _ in SkipWhitespaces
         from xs in DatumParser.Many()
         from _close in Char(')')
         select (SchemeObject)new SchemeVector(xs.ToArray())
@@ -309,7 +330,7 @@ public static class Parser
     /// 〈abbreviation〉 −→ 〈abbrev prefix〉 〈datum〉
     /// </code>
     /// </summary>
-    private static Parser<char, SchemeObject> AbbreviationParser =>
+    private Parser<char, SchemeObject> AbbreviationParser =>
         from abbr in OneOf(
             Char('\'').Select(_ => SchemeSymbol.Known.Quote),
             Char('`').Select(_ => SchemeSymbol.Known.QuasiQuote),

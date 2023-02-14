@@ -18,5 +18,5 @@ public sealed class SchemeBytevector : SchemeDatum
         => Value.GetHashCode();
 
     public override string ToString()
-        => $"u8({string.Join(" ", Value)})";
+        => $"#u8({string.Join(" ", Value)})";
 }

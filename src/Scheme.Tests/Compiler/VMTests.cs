@@ -16,7 +16,7 @@ public class VMTests
     public void Constant_Test()
     {
         var vm = new VM();
-        var result = vm.Run((SchemeDatum)Parser.Parse("1")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("1")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);
@@ -27,7 +27,7 @@ public class VMTests
     {
         var vm = new VM();
         vm.Environment.Set(SchemeSymbol.FromString("a"), new SchemeNumber(2));
-        var result = vm.Run((SchemeDatum)Parser.Parse("a")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("a")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(2, result.Value);
@@ -37,7 +37,7 @@ public class VMTests
     public void If_Test()
     {
         var vm = new VM();
-        var result = vm.Run((SchemeDatum)Parser.Parse("(if #t 1 2)")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("(if #t 1 2)")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);
@@ -48,7 +48,7 @@ public class VMTests
     {
         var vm = new VM();
 
-        var result = vm.Run((SchemeDatum)Parser.Parse("((lambda (a) ((lambda (b) b) a)) 1)")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("((lambda (a) ((lambda (b) b) a)) 1)")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);
@@ -59,7 +59,7 @@ public class VMTests
     {
         var vm = new VM();
 
-        var result = vm.Run((SchemeDatum)Parser.Parse("(+ 1 (call/cc (lambda (k) 3)))")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("(+ 1 (call/cc (lambda (k) 3)))")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(4, result.Value);
@@ -70,7 +70,7 @@ public class VMTests
     {
         var vm = new VM();
 
-        var result = vm.Run((SchemeDatum)Parser.Parse("(+ 1 (call/cc (lambda (k) (* 100 (k 2)))))")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("(+ 1 (call/cc (lambda (k) (* 100 (k 2)))))")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(3, result.Value);
@@ -81,7 +81,7 @@ public class VMTests
     {
         var vm = new VM();
 
-        var result = vm.Run((SchemeDatum)Parser.Parse("((lambda (fib) (set! fib (lambda (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 15)) '())")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("((lambda (fib) (set! fib (lambda (n) (if (< n 2) n (+ (fib (- n 1)) (fib (- n 2)))))) (fib 15)) '())")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(610, result.Value);
@@ -92,7 +92,7 @@ public class VMTests
     public void Set_Test()
     {
         var vm = new VM();
-        var result = vm.Run((SchemeDatum)Parser.Parse("((lambda (a) (set! a 2) a) 1)"));
+        var result = vm.Run((SchemeDatum)new Parser().Parse("((lambda (a) (set! a 2) a) 1)"));
 
         Assert.Equal(2, result.To<SchemeNumber>().Value);
     }
@@ -101,7 +101,7 @@ public class VMTests
     public void Builtin_Test()
     {
         var vm = new VM();
-        var result = vm.Run((SchemeDatum)Parser.Parse("(+ 1 1)")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("(+ 1 1)")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(2, result.Value);
@@ -114,7 +114,7 @@ public class VMTests
         var maxdepth = 0;
         vm.Step += (object? sender, EventArgs e) => maxdepth = Math.Max(maxdepth, vm.StackFrame?.Depth ?? 0);
 
-        var result = vm.Run((SchemeDatum)Parser.Parse("((lambda (ten) (set! ten (lambda (x) (if (< x 1000) (ten (+ x 1)) x))) (ten 0)) '())")) as SchemeNumber;
+        var result = vm.Run((SchemeDatum)new Parser().Parse("((lambda (ten) (set! ten (lambda (x) (if (< x 1000) (ten (+ x 1)) x))) (ten 0)) '())")) as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1000, result.Value);
