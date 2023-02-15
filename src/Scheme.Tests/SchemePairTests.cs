@@ -1,4 +1,4 @@
-namespace Scheme;
+namespace Scheme.Tests;
 
 public class SchemePairTests
 {

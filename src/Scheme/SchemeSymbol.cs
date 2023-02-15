@@ -4,6 +4,8 @@ public sealed class SchemeSymbol : SchemeDatum
 {
     private static readonly Dictionary<string, SchemeSymbol> _interns = new();
 
+    private static int _gensymCounter = 0;
+
     private SchemeSymbol(string value)
     {
         Value = value;
@@ -23,6 +25,19 @@ public sealed class SchemeSymbol : SchemeDatum
             symbol = _interns[value] = new SchemeSymbol(value);
 
         return symbol;
+    }
+
+    public static SchemeSymbol Gensym(string prefix = "g")
+    {
+        string name;
+
+        do
+        {
+            name = $"{prefix}{_gensymCounter++}";
+        }
+        while (_interns.ContainsKey(name));
+
+        return FromString(name);
     }
 
     public override string ToString() => Value;

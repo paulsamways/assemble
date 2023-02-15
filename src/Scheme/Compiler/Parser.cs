@@ -1,5 +1,6 @@
 using System.Text;
 using Pidgin;
+using Scheme.Expander;
 using static Pidgin.Parser;
 
 namespace Scheme.Compiler;

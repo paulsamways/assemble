@@ -140,6 +140,26 @@ public static class SchemeBuiltinProcedures
     public static readonly Func<Environment, SchemeObject[], SchemeObject> Eval
         = SchemeBuiltinProcedure.Unary<SchemeDatum, SchemeObject>((x) => new VM().Run(x));
 
+    [SchemeBuiltinProcedure("gensym")]
+    public static readonly Func<Environment, SchemeObject[], SchemeObject> Gensym
+        = (e, xs) =>
+        {
+            if (xs.Length == 1)
+            {
+                if (xs[0] is SchemeSymbol s)
+                    return SchemeSymbol.Gensym(s.Value);
+                else if (xs[0] is SchemeString str)
+                    return SchemeSymbol.Gensym(str.Value);
+            }
+            else if (xs.Length == 0)
+            {
+                return SchemeSymbol.Gensym();
+            }
+
+            throw new Exception("Gensym must have either no arguments, or a single argument which is a symbol or string");
+        };
+
+
     // [SchemeBuiltinProcedure("apply")]
     // public static SchemeObject Apply(Environment e, SchemeObject[] xs)
     // {

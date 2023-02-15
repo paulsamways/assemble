@@ -18,6 +18,19 @@ public sealed class SchemePair : SchemeDatum
 
     public override string Name => "pair";
 
+    public override SchemeSyntaxObject ToSyntaxObject()
+    {
+        return new SchemeSyntaxObject(
+            new SchemePair(
+                Car is SchemeDatum c ? c.ToSyntaxObject() : Car,
+                Cdr is SchemeDatum d ? d.ToSyntaxObject() : Cdr
+            )
+        );
+    }
+
+    public override SchemeDatum ToDatum()
+        => new SchemePair(Car.ToDatum(), Cdr.ToDatum());
+
     public IEnumerable<SchemeObject> ToEnumerable(bool asList = false)
     {
         yield return Car;

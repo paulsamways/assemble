@@ -12,6 +12,9 @@ public abstract class SchemeObject : IEquatable<SchemeObject>
         throw new Exception($"Type error: have {GetType()} but wanted {typeof(T)}");
     }
 
+    public virtual SchemeDatum ToDatum()
+        => To<SchemeDatum>();
+
     public abstract string Name { get; }
 
     public override string ToString() => $"<{Name}>";

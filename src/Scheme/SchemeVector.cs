@@ -12,6 +12,18 @@ public sealed class SchemeVector : SchemeDatum
     public override string Name
         => "vector";
 
+    public override SchemeSyntaxObject ToSyntaxObject()
+        => new(
+            new SchemeVector(
+                Values
+                    .Select(x => x is SchemeDatum d ? d.ToSyntaxObject() : x)
+                    .ToArray()
+            )
+        );
+
+    public override SchemeDatum ToDatum()
+        => new SchemeVector(Values.Select(x => x.ToDatum()).ToArray());
+
     public override string ToString()
         => $"#({string.Join(" ", Values.Select(x => x.ToString()))})";
 

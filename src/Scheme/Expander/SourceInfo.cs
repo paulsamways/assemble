@@ -1,3 +1,5 @@
+namespace Scheme.Expander;
+
 public sealed class SourceInfo
 {
     public SourceInfo(string source, int line, int column, int offset, int length)
