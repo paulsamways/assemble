@@ -6,13 +6,13 @@ namespace Scheme.Compiler.Instructions;
 /// </summary>
 public class Constant : Instruction
 {
-    public Constant(SchemeDatum datum, Instruction next)
+    public Constant(SchemeObject datum, Instruction next)
     {
         Datum = datum;
         Next = next;
     }
 
-    public SchemeDatum Datum { get; }
+    public SchemeObject Datum { get; }
 
     public Instruction Next { get; set; }
 

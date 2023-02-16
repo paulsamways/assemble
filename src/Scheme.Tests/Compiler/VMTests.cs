@@ -120,4 +120,18 @@ public class VMTests
         Assert.Equal(1000, result.Value);
         Assert.Equal(2, maxdepth);
     }
+
+    [Fact]
+    public void RunProcedure()
+    {
+        var vm = new VM();
+        var proc = vm.Run((SchemeDatum)Parser.Parse("(lambda (x) x)"));
+
+        Assert.IsType<SchemeProcedure>(proc);
+
+        var result = vm.Run((SchemeProcedure)proc, new SchemeNumber(5));
+
+        Assert.IsType<SchemeNumber>(result);
+        Assert.Equal(5, result.To<SchemeNumber>().Value);
+    }
 }

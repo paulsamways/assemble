@@ -1,3 +1,5 @@
+using Scheme.Compiler.Instructions;
+
 namespace Scheme.Compiler;
 
 public class VM
@@ -62,11 +64,8 @@ public class VM
         StackFrame = StackFrame.Parent;
     }
 
-    public SchemeObject Run(SchemeDatum input)
+    private SchemeObject Run()
     {
-        var compiler = new Compiler();
-        Next = compiler.Compile(input);
-
         while (Next is not null)
         {
             OnStep(EventArgs.Empty);
@@ -75,5 +74,25 @@ public class VM
         }
 
         return Accumulator;
+    }
+
+    public SchemeObject Run(SchemeDatum input)
+    {
+        var compiler = new Compiler();
+        Next = compiler.Compile(input);
+
+        return Run();
+    }
+
+    public SchemeObject Run(SchemeProcedure procedure, params SchemeObject[] arguments)
+    {
+        Next = new Constant(procedure, new Apply());
+
+        foreach (var arg in arguments)
+            Next = new Constant(arg.To<SchemeDatum>(), new Argument(Next));
+
+        Next = new Instructions.Frame(new Halt(), Next);
+
+        return Run();
     }
 }
