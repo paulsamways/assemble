@@ -51,6 +51,7 @@ public sealed class SchemeSymbol : SchemeDatum
     public static class Known
     {
         public static readonly SchemeSymbol Quote = FromString("quote");
+        public static readonly SchemeSymbol QuoteSyntax = FromString("quote-syntax");
         public static readonly SchemeSymbol QuasiQuote = FromString("quasiquote");
         public static readonly SchemeSymbol Unquote = FromString("unquote");
         public static readonly SchemeSymbol UnquoteSplicing = FromString("unquote-splicing");
@@ -61,6 +62,8 @@ public sealed class SchemeSymbol : SchemeDatum
         public static readonly SchemeSymbol Or = FromString("or");
         public static readonly SchemeSymbol Not = FromString("not");
         public static readonly SchemeSymbol Lambda = FromString("lambda");
+
+        public static readonly SchemeSymbol LetSyntax = FromString("let-syntax");
 
         public static readonly SchemeSymbol Null_ = FromString("null?");
         public static readonly SchemeSymbol List_ = FromString("list?");
