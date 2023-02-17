@@ -26,6 +26,14 @@ public class BindingTable
         throw new Exception("SchemeSyntaxObject did not contain a SchemeSymbol");
     }
 
+    public SchemeSymbol Resolve(SchemeSyntaxObject o)
+    {
+        if (TryResolve(o, out SchemeSymbol? s))
+            return s;
+
+        throw new Exception("could not resolve binding: " + o.ToString());
+    }
+
     public bool TryResolve(SchemeSyntaxObject o, [NotNullWhen(true)] out SchemeSymbol? binding)
     {
         // (cond

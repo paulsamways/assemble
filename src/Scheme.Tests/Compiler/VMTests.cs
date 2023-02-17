@@ -125,7 +125,7 @@ public class VMTests
     public void RunProcedure()
     {
         var vm = new VM();
-        var proc = vm.Run((SchemeDatum)Parser.Parse("(lambda (x) x)"));
+        var proc = vm.Run((SchemeDatum)new Parser(false).Parse("(lambda (x) x)"));
 
         Assert.IsType<SchemeProcedure>(proc);
 

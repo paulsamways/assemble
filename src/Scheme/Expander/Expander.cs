@@ -94,11 +94,13 @@ public class Expander
 
             if (e.TryLookup(binding, out SchemeObject? eo))
             {
-                if (eo is SchemeProcedure)
+                if (eo is SchemeProcedure macro)
                 {
                     var ts = new Scope();
                     var x = o.AddScope(ts);
-                    throw new NotImplementedException();
+                    var result = _vm.Run(macro, x);
+
+                    return Expand(result.To<SchemeSyntaxObject>(), e);
                 }
                 else if (eo is SchemeSymbol v)
                 {

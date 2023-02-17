@@ -14,4 +14,14 @@ public class ExpanderTests
 
         Assert.Equal(o.ToDatum(), result.ToDatum());
     }
+
+    [Fact]
+    public void SimpleMacroTest()
+    {
+        var o = new Parser(true).Parse("(let-syntax ((one (lambda (stx) (quote-syntax '1)))) (one))").To<SchemeSyntaxObject>();
+        var expander = new Expander();
+        var e = expander.Expand(o);
+
+        Assert.IsType<SchemeNumber>(e);
+    }
 }
