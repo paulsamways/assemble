@@ -16,4 +16,7 @@ public sealed class SchemeUndefined : SchemeObject
 
     public override int GetHashCode()
         => 61;
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeUndefined(this);
 }

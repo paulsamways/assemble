@@ -91,6 +91,9 @@ public sealed class SchemeBuiltinProcedure : SchemeObject
                 y.To<T2SchemeObject>().Unwrap()
             )
         ));
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeBuiltinProcedure(this);
 }
 
 public interface Wraps<T, U>

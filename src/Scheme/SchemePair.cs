@@ -1,6 +1,6 @@
 namespace Scheme;
 
-public sealed class SchemePair : SchemeDatum
+public class SchemePair : SchemeDatum
 {
     public SchemePair(SchemeObject car, SchemeObject cdr)
     {
@@ -17,19 +17,6 @@ public sealed class SchemePair : SchemeDatum
     public bool IsImproperList => ToEnumerable().Last() is not SchemeEmptyList;
 
     public override string Name => "pair";
-
-    public override SchemeSyntaxObject ToSyntaxObject()
-    {
-        return new SchemeSyntaxObject(
-            new SchemePair(
-                Car is SchemeDatum c ? c.ToSyntaxObject() : Car,
-                Cdr is SchemeDatum d ? d.ToSyntaxObject() : Cdr
-            )
-        );
-    }
-
-    public override SchemeDatum ToDatum()
-        => new SchemePair(Car.ToDatum(), Cdr.ToDatum());
 
     public IEnumerable<SchemeObject> ToEnumerable(bool asList = false)
     {
@@ -76,4 +63,7 @@ public sealed class SchemePair : SchemeDatum
             .Reverse()
             .Aggregate((SchemeDatum)SchemeEmptyList.Value, (cdr, value) => new SchemePair(value, cdr));
     }
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemePair(this, Car.Visit(v), Cdr.Visit(v));
 }

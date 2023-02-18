@@ -33,6 +33,9 @@ public sealed class SchemeBoolean : SchemeDatum, Wraps<SchemeBoolean, bool>
          o is SchemeBoolean b && !b.Value
             ? False : True;
 
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeBoolean(this);
+
     public static readonly SchemeBoolean True = new(true);
     public static readonly SchemeBoolean False = new(false);
 }

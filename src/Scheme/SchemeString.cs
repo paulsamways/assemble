@@ -22,4 +22,7 @@ public sealed class SchemeString : SchemeDatum
         // TODO: Escape specials
         return $"\"{Value}\"";
     }
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeString(this);
 }

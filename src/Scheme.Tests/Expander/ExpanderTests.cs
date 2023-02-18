@@ -7,12 +7,13 @@ public class ExpanderTests
     [Fact]
     public void LambdaExpandsToItself()
     {
-        var o = new Parser(true).Parse("(lambda (x) x)").To<SchemeSyntaxObject>();
+        var o = new Parser(false).Parse("(lambda (x) x)");
+        var stx = new Parser(true).Parse("(lambda (x) x)");
 
         var expander = new Expander();
-        var result = expander.Expand(o);
+        var result = expander.Expand(stx);
 
-        Assert.Equal(o.ToDatum(), result.ToDatum());
+        Assert.Equal(o, result);
     }
 
     [Fact]
@@ -21,7 +22,9 @@ public class ExpanderTests
         var o = new Parser(true).Parse("(let-syntax ((one (lambda (stx) (quote-syntax '1)))) (one))").To<SchemeSyntaxObject>();
         var expander = new Expander();
         var e = expander.Expand(o);
+        var vm = new VM();
+        var result = vm.Run(e.To<SchemeDatum>()).To<SchemeNumber>();
 
-        Assert.IsType<SchemeNumber>(e);
+        Assert.Equal(1, result.Value);
     }
 }

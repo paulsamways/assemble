@@ -11,15 +11,15 @@ public sealed class SourceInfo
         Length = length;
     }
 
-    public string Source { get; set; }
+    public string Source { get; }
 
-    public int Line { get; set; }
+    public int Line { get; }
 
-    public int Column { get; set; }
+    public int Column { get; }
 
-    public int Offset { get; set; }
+    public int Offset { get; }
 
-    public int Length { get; set; }
+    public int Length { get; }
 
     public ReadOnlySpan<char> Span =>
         Source.Substring(Offset, Length);

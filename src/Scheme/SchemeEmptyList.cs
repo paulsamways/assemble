@@ -19,4 +19,7 @@ public sealed class SchemeEmptyList : SchemeDatum
     public override int GetHashCode() => 17;
 
     public static readonly SchemeEmptyList Value = new();
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeEmptyList(this);
 }

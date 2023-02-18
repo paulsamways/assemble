@@ -26,51 +26,19 @@ public class SchemeSyntaxObject : SchemeObject
 
     public HashSet<Scope> Scope { get; }
 
+    public void AddScope(Scope s)
+        => Scope.Add(s);
 
-    private SchemeSyntaxObject AdjustScope(Scope s, Func<HashSet<Scope>, Scope, HashSet<Scope>> op)
+    public void FlipScope(Scope s)
     {
-        var newScope = op(Scope, s);
-
-        if (Datum is SchemePair p)
-        {
-            var car = p.Car;
-            var cdr = p.Cdr;
-
-            if (car is SchemeSyntaxObject s1)
-                car = s1.AdjustScope(s, op);
-
-            if (cdr is SchemeSyntaxObject s2)
-                cdr = s2.AdjustScope(s, op);
-
-            return new SchemeSyntaxObject(new SchemePair(car, cdr), newScope.ToArray());
-        }
+        if (Scope.Contains(s))
+            Scope.Remove(s);
         else
-        {
-            return new SchemeSyntaxObject(Datum, newScope.ToArray());
-        }
+            Scope.Add(s);
     }
-
-    public SchemeSyntaxObject AddScope(Scope s)
-        => AdjustScope(s, (scopes, scope) => new HashSet<Scope>(scopes) { scope });
-
-    public SchemeSyntaxObject FlipScope(Scope s)
-        => AdjustScope(s, (scopes, scope) =>
-        {
-            var s = new HashSet<Scope>(scopes);
-
-            if (s.Contains(scope))
-                s.Remove(scope);
-            else
-                s.Add(scope);
-
-            return s;
-        });
 
     public override string ToString()
         => Datum.ToString();
-
-    public override SchemeDatum ToDatum()
-        => Datum.ToDatum();
 
     public override bool Equals(SchemeObject? other)
         => Datum.Equals(other);
@@ -80,4 +48,7 @@ public class SchemeSyntaxObject : SchemeObject
 
     public override int GetHashCode()
         => Datum.GetHashCode();
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeSyntaxObject(this, Datum.Visit(v).To<SchemeDatum>());
 }

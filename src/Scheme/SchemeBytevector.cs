@@ -11,6 +11,7 @@ public sealed class SchemeBytevector : SchemeDatum
 
     public override string Name => "bytevector";
 
+
     public override bool Equals(SchemeObject? other)
         => other is not null && other is SchemeBytevector b && b.Value.SequenceEqual(Value);
 
@@ -19,4 +20,7 @@ public sealed class SchemeBytevector : SchemeDatum
 
     public override string ToString()
         => $"#u8({string.Join(" ", Value)})";
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeBytevector(this);
 }

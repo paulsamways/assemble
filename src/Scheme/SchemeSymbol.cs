@@ -48,6 +48,9 @@ public sealed class SchemeSymbol : SchemeDatum
     public override int GetHashCode()
         => Value.GetHashCode();
 
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeSymbol(this);
+
     public static class Known
     {
         public static readonly SchemeSymbol Quote = FromString("quote");

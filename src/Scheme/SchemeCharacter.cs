@@ -34,6 +34,9 @@ public sealed class SchemeCharacter : SchemeDatum
     public override bool Same(SchemeObject other)
         => Equals(other);
 
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeCharacter(this);
+
     public static class Names
     {
         private static readonly Dictionary<string, char> _nameToCharLookup = new()

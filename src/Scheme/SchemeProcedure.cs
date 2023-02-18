@@ -24,4 +24,7 @@ public class SchemeProcedure : SchemeObject
 
     public override int GetHashCode()
         => HashCode.Combine(Closure, Parameters, Body);
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeProcedure(this);
 }

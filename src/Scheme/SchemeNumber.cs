@@ -25,4 +25,7 @@ public sealed class SchemeNumber : SchemeDatum, Wraps<SchemeNumber, decimal>
         => other is not null && other is SchemeNumber b && b.Value == Value;
 
     public override int GetHashCode() => Value.GetHashCode();
+
+    public override SchemeObject Visit(SchemeObjectVisitor v)
+        => v.OnSchemeNumber(this);
 }
