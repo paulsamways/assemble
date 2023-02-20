@@ -335,10 +335,10 @@ public class Parser
     /// </summary>
     private Parser<char, SchemeObject> AbbreviationParser =>
         from abbr in SyntaxObject(OneOf(
-            Char('\'').Select(_ => (SchemeObject)SchemeSymbol.Known.Quote),
-            Char('`').Select(_ => (SchemeObject)SchemeSymbol.Known.QuasiQuote),
-            Char(',').Select(_ => (SchemeObject)SchemeSymbol.Known.Unquote),
-            String(",@").Select(_ => (SchemeObject)SchemeSymbol.Known.UnquoteSplicing)
+            Char('\'').Select(_ => (SchemeObject)SchemeSymbol.Form.Quote),
+            Char('`').Select(_ => (SchemeObject)SchemeSymbol.Form.QuasiQuote),
+            Char(',').Select(_ => (SchemeObject)SchemeSymbol.Form.Unquote),
+            String(",@").Select(_ => (SchemeObject)SchemeSymbol.Form.UnquoteSplicing)
         ))
         from v in DatumParser
         select (SchemeObject)new SchemePair(abbr, new SchemePair(v, SchemeEmptyList.Value));

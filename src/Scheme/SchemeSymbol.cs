@@ -51,23 +51,26 @@ public sealed class SchemeSymbol : SchemeDatum
     public override SchemeObject Visit(SchemeObjectVisitor v)
         => v.OnSchemeSymbol(this);
 
-    public static class Known
+    public static class Form
     {
         public static readonly SchemeSymbol Quote = FromString("quote");
         public static readonly SchemeSymbol QuoteSyntax = FromString("quote-syntax");
         public static readonly SchemeSymbol QuasiQuote = FromString("quasiquote");
         public static readonly SchemeSymbol Unquote = FromString("unquote");
         public static readonly SchemeSymbol UnquoteSplicing = FromString("unquote-splicing");
-
         public static readonly SchemeSymbol Set = FromString("set!");
         public static readonly SchemeSymbol If = FromString("if");
+        public static readonly SchemeSymbol Lambda = FromString("lambda");
+        public static readonly SchemeSymbol CallWithCurrentContinuation = FromString("call-with-current-continuation");
+        public static readonly SchemeSymbol CallCC = FromString("call/cc");
+        public static readonly SchemeSymbol LetSyntax = FromString("let-syntax");
+    }
+
+    public static class Primitive
+    {
         public static readonly SchemeSymbol And = FromString("and");
         public static readonly SchemeSymbol Or = FromString("or");
         public static readonly SchemeSymbol Not = FromString("not");
-        public static readonly SchemeSymbol Lambda = FromString("lambda");
-
-        public static readonly SchemeSymbol LetSyntax = FromString("let-syntax");
-
         public static readonly SchemeSymbol Null_ = FromString("null?");
         public static readonly SchemeSymbol List_ = FromString("list?");
         public static readonly SchemeSymbol Pair_ = FromString("pair?");
@@ -76,7 +79,6 @@ public sealed class SchemeSymbol : SchemeDatum
         public static readonly SchemeSymbol Cdr = FromString("cdr");
         public static readonly SchemeSymbol SetCar = FromString("set-car!");
         public static readonly SchemeSymbol SetCdr = FromString("set-cdr!");
-
         public static readonly SchemeSymbol Apply = FromString("apply");
         public static readonly SchemeSymbol Map = FromString("map");
     }

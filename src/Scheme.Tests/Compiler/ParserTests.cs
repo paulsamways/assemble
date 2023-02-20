@@ -147,7 +147,7 @@ public class ParserTests
     {
         var v = new Parser().Parse("'()").To<SchemePair>();
 
-        Assert.Equal(v.Car, SchemeSymbol.Known.Quote);
+        Assert.Equal(v.Car, SchemeSymbol.Form.Quote);
         Assert.Equal(v.Cdr.To<SchemePair>().Car, SchemeEmptyList.Value);
     }
 
@@ -156,7 +156,7 @@ public class ParserTests
     {
         var v = new Parser().Parse("`()").To<SchemePair>();
 
-        Assert.Equal(v.Car, SchemeSymbol.Known.QuasiQuote);
+        Assert.Equal(v.Car, SchemeSymbol.Form.QuasiQuote);
         Assert.Equal(v.Cdr.To<SchemePair>().Car, SchemeEmptyList.Value);
     }
 }

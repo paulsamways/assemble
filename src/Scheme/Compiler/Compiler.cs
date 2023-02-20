@@ -36,26 +36,26 @@ public class Compiler
     {
         if (p.Car.TryTo(out SchemeSymbol? s, out SourceInfo? _))
         {
-            switch (s.Value)
-            {
-                case "quote":
-                    var datum = p.Cdr.To<SchemePair>().Car.To<SchemeDatum>(out SourceInfo? datumSource);
-
-                    return CompileConstant(datum, datumSource, next);
-                case "set!":
-                    return CompileSet(p, ps, next);
-                case "if":
-                    return CompileIf(p, ps, next);
-                case "lambda":
-                    return CompileClosure(p, ps, next);
-                case "call/cc":
-                case "call-with-current-continuation":
-                    return CompileContinuation(p, ps, next);
-            }
+            if (s.Equals(SchemeSymbol.Form.Quote))
+                return CompileQuote(p, ps, next);
+            else if (s.Equals(SchemeSymbol.Form.Set))
+                return CompileSet(p, ps, next);
+            else if (s.Equals(SchemeSymbol.Form.If))
+                return CompileIf(p, ps, next);
+            else if (s.Equals(SchemeSymbol.Form.Lambda))
+                return CompileClosure(p, ps, next);
+            else if (s.Equals(SchemeSymbol.Form.CallWithCurrentContinuation) || s.Equals(SchemeSymbol.Form.CallCC))
+                return CompileContinuation(p, ps, next);
         }
 
-        // Application
         return CompileApplication(p, ps, next);
+    }
+
+    private Instruction CompileQuote(SchemePair p, SourceInfo? _, Instruction next)
+    {
+        var datum = p.Cdr.To<SchemePair>().Car.To<SchemeDatum>(out SourceInfo? datumSource);
+
+        return CompileConstant(datum, datumSource, next);
     }
 
     private Instruction CompileSet(SchemePair p, SourceInfo? _, Instruction next)
@@ -86,7 +86,6 @@ public class Compiler
 
     private Instruction CompileApplication(SchemePair p, SourceInfo? _, Instruction next)
     {
-        // apply the args to the procedure
         Instruction proc = CompileDatum(p.Car, new Apply());
 
         if (p.Cdr is SchemePair args)

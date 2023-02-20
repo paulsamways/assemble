@@ -9,10 +9,10 @@ public class Expander
     private readonly VM _vm;
     private readonly Compiler.Environment _coreEnvironment;
     private readonly HashSet<SchemeSymbol> _coreForms = new(new SchemeSymbol[] {
-        SchemeSymbol.Known.Lambda,
-        SchemeSymbol.Known.LetSyntax,
-        SchemeSymbol.Known.QuoteSyntax,
-        SchemeSymbol.Known.Quote,
+        SchemeSymbol.Form.Lambda,
+        SchemeSymbol.Form.LetSyntax,
+        SchemeSymbol.Form.QuoteSyntax,
+        SchemeSymbol.Form.Quote,
     });
     private readonly Scope _coreScope = new();
 
@@ -70,9 +70,8 @@ public class Expander
         {
             return ExpandApplication(p, e);
         }
+
         throw new Exception("bad syntax: " + o.ToString());
-        // Wrong
-        return o;
     }
 
     private SchemeSyntaxObject ExpandIdentifier(SchemeSyntaxObject o, Compiler.Environment e)
@@ -105,13 +104,13 @@ public class Expander
         {
             var binding = _bindings.Resolve(id);
 
-            if (binding.Equals(SchemeSymbol.Known.Lambda))
+            if (binding.Equals(SchemeSymbol.Form.Lambda))
                 return ExpandLambda(p, e);
 
-            if (binding.Equals(SchemeSymbol.Known.LetSyntax))
+            if (binding.Equals(SchemeSymbol.Form.LetSyntax))
                 return ExpandLetSyntax(p, e);
 
-            if (binding.Equals(SchemeSymbol.Known.Quote) || binding.Equals(SchemeSymbol.Known.QuoteSyntax))
+            if (binding.Equals(SchemeSymbol.Form.Quote) || binding.Equals(SchemeSymbol.Form.QuoteSyntax))
                 return p;
 
             var eo = e.GetOrThrow(binding);
@@ -133,25 +132,6 @@ public class Expander
 
     private SchemeObject ExpandLetSyntax(SchemePair p, Compiler.Environment e)
     {
-        /*
-            (define (expand-let-syntax s env)
-                (match-define `(,let-syntax-id ([,lhs-id ,rhs])
-                                    ,body)
-                                s)
-                (define sc (scope))
-                ;; Add the new scope to each binding identifier:
-                (define id (add-scope lhs-id sc))
-                ;; Bind the left-hand identifier and generate a corresponding key
-                ;; for the expand-time environment:
-                (define binding (add-local-binding! id))
-                ;; Evaluate compile-time expressions:
-                (define rhs-val (eval-for-syntax-binding rhs))
-                ;; Fill expansion-time environment:
-                (define body-env (env-extend env binding rhs-val))
-                ;; Expand body
-                (expand (add-scope body sc) body-env))
-        */
-
         var els = p.ToEnumerable(true).ToArray();
         var letSyntaxSym = els[0];
         var bindings = els[1].To<SchemePair>().ToEnumerable(true).Select(x => x.To<SchemePair>());
@@ -211,40 +191,6 @@ public class Expander
 
     private SchemeObject Compile(SchemeObject o)
     {
-        /*
-
-            ;; Convert an expanded syntax object to an expression that is
-            ;; represented by a plain S-expression.
-            (define (compile s)
-            (cond
-            [(pair? s)
-                (define core-sym (and (identifier? (car s))
-                                    (resolve (car s))))
-                (case core-sym
-                [(lambda)
-                (match-define `(,lambda-id (,id) ,body) s)
-                `(lambda (,(resolve id)) ,(compile body))]
-                [(quote)
-                (match-define `(,quote-id ,datum) s)
-                ;; Strip away scopes:
-                `(quote ,(syntax->datum datum))]
-                [(quote-syntax)
-                (match-define `(,quote-syntax-id ,datum) s)
-                ;; Preserve the complete syntax object:
-                `(quote ,datum)]
-                [else
-                ;; Application:
-                (map compile s)])]
-            [(identifier? s)
-                (resolve s)]
-            [else
-                (error "bad syntax after expansion:" s)]))
-
-        */
-
-        // if (o is SchemeSyntaxObject stx)
-        //     o = stx.Datum;
-
         if (o is SchemePair p)
         {
             var els = p.ToEnumerable(true).ToArray();
@@ -253,10 +199,10 @@ public class Expander
             {
                 if (_bindings.TryResolve(s, out SchemeSymbol? coreSym))
                 {
-                    if (coreSym.Equals(SchemeSymbol.Known.Lambda))
+                    if (coreSym.Equals(SchemeSymbol.Form.Lambda))
                     {
                         return SchemePair.FromEnumerable(new SchemeObject[] {
-                            SchemeSymbol.Known.Lambda,
+                            SchemeSymbol.Form.Lambda,
                             SchemePair.FromEnumerable(
                                 els[1]
                                     .To<SchemePair>()
@@ -265,17 +211,17 @@ public class Expander
                             Compile(els[2])
                         });
                     }
-                    else if (coreSym.Equals(SchemeSymbol.Known.Quote))
+                    else if (coreSym.Equals(SchemeSymbol.Form.Quote))
                     {
                         return SchemePair.FromEnumerable(new SchemeObject[] {
-                            SchemeSymbol.Known.Quote,
+                            SchemeSymbol.Form.Quote,
                             ToDatum(els[1])
                         });
                     }
-                    else if (coreSym.Equals(SchemeSymbol.Known.QuoteSyntax))
+                    else if (coreSym.Equals(SchemeSymbol.Form.QuoteSyntax))
                     {
                         return SchemePair.FromEnumerable(new SchemeObject[] {
-                            SchemeSymbol.Known.Quote,
+                            SchemeSymbol.Form.Quote,
                             els[1]
                         });
                     }
