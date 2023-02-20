@@ -30,6 +30,16 @@ public class Parser
     private static Parser<char, T> Token<T>(Parser<char, T> p)
         => Try(p);
 
+    private Parser<char, SchemeObject> SyntaxObject(Parser<char, SchemeObject> p) =>
+        _asSyntaxObject
+            ? from pos in Parser<char>.CurrentPos
+              from start in Parser<char>.CurrentOffset
+              from x in Parser<char>.CurrentSourcePosDelta
+              from datum in p
+              from end in Parser<char>.CurrentOffset
+              select (SchemeObject)new SchemeSyntaxObject((SchemeDatum)datum, new SourceInfo(_source, pos.Line, pos.Col, start, end - start))
+            : p;
+
     /// <summary>
     /// Parser for the datum production rule:
     /// <code>
@@ -37,16 +47,8 @@ public class Parser
     /// </code>
     /// </summary>
     private Parser<char, SchemeObject> DatumParser =>
-        from pos in Parser<char>.CurrentPos
-        from start in Parser<char>.CurrentOffset
-        from x in Parser<char>.CurrentSourcePosDelta
-        from datum in OneOf(SimpleDatum, CompoundDatum)
-        from end in Parser<char>.CurrentOffset
-        from _ in SkipWhitespaces
-        select _asSyntaxObject
-            ? new SchemeSyntaxObject((SchemeDatum)datum, new SourceInfo(_source, pos.Line, pos.Col, start, end - start))
-            : datum;
-
+        SyntaxObject(OneOf(SimpleDatum, CompoundDatum))
+            .Before(SkipWhitespaces);
 
     #region Simple Datums
 
@@ -332,12 +334,12 @@ public class Parser
     /// </code>
     /// </summary>
     private Parser<char, SchemeObject> AbbreviationParser =>
-        from abbr in OneOf(
-            Char('\'').Select(_ => SchemeSymbol.Known.Quote),
-            Char('`').Select(_ => SchemeSymbol.Known.QuasiQuote),
-            Char(',').Select(_ => SchemeSymbol.Known.Unquote),
-            String(",@").Select(_ => SchemeSymbol.Known.UnquoteSplicing)
-        )
+        from abbr in SyntaxObject(OneOf(
+            Char('\'').Select(_ => (SchemeObject)SchemeSymbol.Known.Quote),
+            Char('`').Select(_ => (SchemeObject)SchemeSymbol.Known.QuasiQuote),
+            Char(',').Select(_ => (SchemeObject)SchemeSymbol.Known.Unquote),
+            String(",@").Select(_ => (SchemeObject)SchemeSymbol.Known.UnquoteSplicing)
+        ))
         from v in DatumParser
         select (SchemeObject)new SchemePair(abbr, new SchemePair(v, SchemeEmptyList.Value));
 

@@ -19,11 +19,11 @@ public class ExpanderTests
     [Fact]
     public void SimpleMacroTest()
     {
-        var o = new Parser(true).Parse("(let-syntax ((one (lambda (stx) (quote-syntax '1)))) (one))").To<SchemeSyntaxObject>();
+        var o = new Parser(true).Parse("(let-syntax ((one (lambda (stx) (quote-syntax (quote 1))))) (one))").To<SchemeSyntaxObject>();
         var expander = new Expander();
         var e = expander.Expand(o);
         var vm = new VM();
-        var result = vm.Run(e.To<SchemeDatum>()).To<SchemeNumber>();
+        var result = vm.Run(e).To<SchemeNumber>();
 
         Assert.Equal(1, result.Value);
     }

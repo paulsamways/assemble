@@ -4,28 +4,25 @@ namespace Scheme.Expander;
 
 public class Expander
 {
+    public static readonly SchemeSymbol Variable = SchemeSymbol.Gensym("variable");
     private readonly BindingTable _bindings;
     private readonly VM _vm;
-
-    private readonly HashSet<SchemeSymbol> _corePrimitives = new(new SchemeSymbol[] {
-        SchemeSymbol.Known.Cons
-    });
-
+    private readonly Compiler.Environment _coreEnvironment;
     private readonly HashSet<SchemeSymbol> _coreForms = new(new SchemeSymbol[] {
         SchemeSymbol.Known.Lambda,
         SchemeSymbol.Known.LetSyntax,
         SchemeSymbol.Known.QuoteSyntax,
         SchemeSymbol.Known.Quote,
     });
-
     private readonly Scope _coreScope = new();
 
     public Expander()
     {
+        _coreEnvironment = Compiler.Environment.Base();
+        _vm = new VM(_coreEnvironment);
         _bindings = new BindingTable();
-        _vm = new VM();
 
-        foreach (var core in _corePrimitives.Union(_coreForms))
+        foreach (var core in _coreForms.Union(_coreEnvironment.GetNames().Select(SchemeSymbol.FromString)))
             _bindings.Add(new SchemeSyntaxObject(core, _coreScope), core);
     }
 
@@ -60,41 +57,37 @@ public class Expander
             }
         });
 
-        return Expand(x, new Environment());
+        return Expand(x, _coreEnvironment);
     }
 
-    public SchemeObject Expand(SchemeObject o, Environment e)
+    private SchemeObject Expand(SchemeObject o, Compiler.Environment e)
     {
-        // Identifier
         if (o is SchemeSyntaxObject stx && stx.Datum is SchemeSymbol)
         {
             return ExpandIdentifier(stx, e);
         }
-        else if (o is SchemePair p && p.Car is SchemeSyntaxObject sso && sso.Datum is SchemeSymbol)
+        else if (o is SchemePair p)
         {
-            return ExpandIdentifierApplicationForm(p, e);
+            return ExpandApplication(p, e);
         }
-        else
-        {
-            return o;
-        }
-
-        throw new Exception("Bad syntax");
+        throw new Exception("bad syntax: " + o.ToString());
+        // Wrong
+        return o;
     }
 
-    private SchemeSyntaxObject ExpandIdentifier(SchemeSyntaxObject o, Environment e)
+    private SchemeSyntaxObject ExpandIdentifier(SchemeSyntaxObject o, Compiler.Environment e)
     {
         if (_bindings.TryResolve(o, out SchemeSymbol? b))
         {
-            if (_corePrimitives.Contains(b))
+            if (_coreEnvironment.TryGet(b, out SchemeObject? _))
                 return o;
 
             if (_coreForms.Contains(b))
                 throw new Exception("bad syntax");
 
-            if (e.TryLookup(b, out SchemeObject? eo) && eo is SchemeSymbol v)
+            if (e.TryGet(b, out SchemeObject? eo) && eo is SchemeSymbol v)
             {
-                if (v.Equals(Environment.Variable))
+                if (v.Equals(Variable))
                     return o;
 
                 throw new Exception("bad synax");
@@ -106,12 +99,12 @@ public class Expander
         throw new Exception("free variable");
     }
 
-    private SchemeObject ExpandIdentifierApplicationForm(SchemePair p, Environment e)
+    private SchemeObject ExpandApplication(SchemePair p, Compiler.Environment e)
     {
-        var id = p.Car.To<SchemeSyntaxObject>();
-
-        if (_bindings.TryResolve(id, out SchemeSymbol? binding))
+        if (p.Car is SchemeSyntaxObject id && id.Datum is SchemeSymbol)
         {
+            var binding = _bindings.Resolve(id);
+
             if (binding.Equals(SchemeSymbol.Known.Lambda))
                 return ExpandLambda(p, e);
 
@@ -121,28 +114,24 @@ public class Expander
             if (binding.Equals(SchemeSymbol.Known.Quote) || binding.Equals(SchemeSymbol.Known.QuoteSyntax))
                 return p;
 
-            if (e.TryLookup(binding, out SchemeObject? eo))
-            {
-                if (eo is SchemeProcedure macro)
-                {
-                    var ts = new Scope();
-                    AddScopeRecursive(p, ts);
-                    var result = _vm.Run(macro, p);
+            var eo = e.GetOrThrow(binding);
 
-                    return Expand(result, e);
-                }
-                else if (eo is SchemeSymbol v)
-                {
-                    if (v.Equals(Environment.Variable))
-                        return ExpandApplication(p, e);
-                }
+            if (eo is SchemeProcedure macro)
+            {
+                var ts = new Scope();
+                AddScopeRecursive(p, ts);
+                var result = _vm.Run(macro, p);
+
+                // TODO: flip scope!!
+
+                return Expand(result, e);
             }
         }
 
-        throw new NotImplementedException();
+        return SchemePair.FromEnumerable(p.ToEnumerable(true).Select(x => Expand(x, e)));
     }
 
-    private SchemeObject ExpandLetSyntax(SchemePair p, Environment e)
+    private SchemeObject ExpandLetSyntax(SchemePair p, Compiler.Environment e)
     {
         /*
             (define (expand-let-syntax s env)
@@ -169,7 +158,7 @@ public class Expander
         var body = els[2];
 
         var scope = new Scope();
-        var env = new Environment(e);
+        var env = new Compiler.Environment(e);
 
         foreach (var pair in bindings)
         {
@@ -178,16 +167,46 @@ public class Expander
             var binding = _bindings.Add(lhs);
 
             var rhs = pair.Cdr.To<SchemePair>().Car;
-            var rhsE = Expand(rhs, new Environment());
+            var rhsE = Expand(rhs, new Compiler.Environment());
             var rhsC = Compile(rhsE);
             var rhsV = _vm.Run(rhsC.To<SchemeDatum>());
 
-            env.Add(binding, rhsV);
+            env.Set(binding, rhsV);
         }
 
         AddScopeRecursive(body, scope);
 
         return Expand(body, env);
+    }
+
+    private SchemeObject ExpandLambda(SchemePair p, Compiler.Environment e)
+    {
+        var scope = new Scope();
+
+        var els = p.ToEnumerable(true).ToArray();
+
+        var lambdaSym = els[0];
+        var args = els[1]
+            .To<SchemePair>()
+            .ToEnumerable(true);
+        var body = els[2];
+
+        var bodyEnv = new Compiler.Environment(e);
+        foreach (var arg in args)
+        {
+            AddScopeRecursive(arg, scope);
+
+            bodyEnv.Set(_bindings.Add(arg.To<SchemeSyntaxObject>()), Variable);
+        }
+
+        AddScopeRecursive(body, scope);
+        var expandedBody = Expand(body, bodyEnv);
+
+        return SchemePair.FromEnumerable(new SchemeObject[] {
+            lambdaSym,
+            SchemePair.FromEnumerable(args),
+            expandedBody
+        });
     }
 
     private SchemeObject Compile(SchemeObject o)
@@ -274,44 +293,5 @@ public class Expander
         }
 
         throw new Exception("Bad syntax");
-    }
-
-    private SchemeObject ExpandLambda(SchemePair p, Environment e)
-    {
-        var scope = new Scope();
-
-        var els = p.ToEnumerable(true).ToArray();
-
-        var lambdaSym = els[0];
-        var args = els[1]
-            .To<SchemePair>()
-            .ToEnumerable(true);
-        var body = els[2];
-
-        var bodyEnv = new Environment(e);
-        foreach (var arg in args)
-        {
-            AddScopeRecursive(arg, scope);
-
-            bodyEnv.Add(_bindings.Add(arg.To<SchemeSyntaxObject>()), Environment.Variable);
-        }
-
-        AddScopeRecursive(body, scope);
-        var expandedBody = Expand(body, bodyEnv);
-
-        return SchemePair.FromEnumerable(new SchemeObject[] {
-            lambdaSym,
-            SchemePair.FromEnumerable(args),
-            expandedBody
-        });
-    }
-
-    private SchemeObject ExpandApplication(SchemePair p, Environment e)
-    {
-        var xs = p
-            .ToEnumerable(true)
-            .Select(x => Expand(x, e));
-
-        return SchemePair.FromEnumerable(xs);
     }
 }

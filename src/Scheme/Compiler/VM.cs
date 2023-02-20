@@ -76,7 +76,7 @@ public class VM
         return Accumulator;
     }
 
-    public SchemeObject Run(SchemeDatum input)
+    public SchemeObject Run(SchemeObject input)
     {
         var compiler = new Compiler();
         Next = compiler.Compile(input);

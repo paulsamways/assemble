@@ -1,12 +1,39 @@
 namespace Scheme;
 
+using System.Diagnostics.CodeAnalysis;
 using Scheme.Compiler;
+using Scheme.Expander;
 
 public abstract class SchemeObject : IEquatable<SchemeObject>
 {
-    public virtual T To<T>() where T : SchemeObject
+    public virtual bool TryTo<T>([NotNullWhen(true)] out T? value, out SourceInfo? source)
+        where T : SchemeObject
     {
         if (this is T t)
+        {
+            value = t;
+            source = null;
+            return true;
+        }
+
+        if (this is SchemeSyntaxObject o && o.Datum is T datum)
+        {
+            value = datum;
+            source = o.Source;
+            return true;
+        }
+
+        value = null;
+        source = null;
+        return false;
+    }
+
+    public virtual T To<T>() where T : SchemeObject
+        => To<T>(out SourceInfo? _);
+
+    public virtual T To<T>(out SourceInfo? s) where T : SchemeObject
+    {
+        if (TryTo(out T? t, out s))
             return t;
 
         throw new Exception($"Type error: have {GetType()} but wanted {typeof(T)}");

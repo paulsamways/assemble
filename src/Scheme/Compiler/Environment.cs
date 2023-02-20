@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Scheme.Interop;
 
 namespace Scheme.Compiler;
@@ -45,6 +46,21 @@ public class Environment
 
         return null;
     }
+
+    public bool TryGet(SchemeSymbol symbol, [NotNullWhen(true)] out SchemeObject? value)
+    {
+        value = Get(symbol);
+        return value is not null;
+    }
+
+    public SchemeObject GetOrThrow(SchemeSymbol symbol)
+    {
+        var result = Get(symbol);
+        if (result is null)
+            throw new Exception("Unbound: " + symbol.Value);
+        return result;
+    }
+
     public void Set(SchemeSymbol symbol, SchemeObject o)
     {
         _objects[symbol.Value] = o;
