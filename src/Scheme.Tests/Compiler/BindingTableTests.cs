@@ -1,4 +1,6 @@
-namespace Scheme.Expander.Tests;
+using Scheme.Compiler;
+
+namespace Scheme.Tests.Compiler;
 
 public class BindingTableTests
 {

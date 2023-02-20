@@ -1,6 +1,6 @@
 using Scheme.Compiler;
 
-namespace Scheme.Expander.Tests;
+namespace Scheme.Tests.Compiler;
 
 public class ExpanderTests
 {

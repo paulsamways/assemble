@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Scheme.Expander;
+namespace Scheme.Compiler;
 
 public class BindingTable
 {

@@ -1,4 +1,4 @@
-namespace Scheme.Expander;
+namespace Scheme.Compiler;
 
 public sealed class Scope
 {

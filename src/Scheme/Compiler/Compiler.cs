@@ -1,5 +1,4 @@
 using Scheme.Compiler.Instructions;
-using Scheme.Expander;
 
 namespace Scheme.Compiler;
 
