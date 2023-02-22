@@ -3,25 +3,40 @@ namespace Scheme.Compiler;
 public class Expander
 {
     public static readonly SchemeSymbol Variable = SchemeSymbol.Gensym("variable");
-    private readonly BindingTable _bindings;
-    private readonly VM _vm;
-    private readonly Environment _coreEnvironment;
-    private readonly HashSet<SchemeSymbol> _coreForms = new(new SchemeSymbol[] {
+
+    private static readonly HashSet<SchemeSymbol> CoreForms = new(new SchemeSymbol[] {
         SchemeSymbol.Form.Lambda,
         SchemeSymbol.Form.LetSyntax,
         SchemeSymbol.Form.QuoteSyntax,
         SchemeSymbol.Form.Quote,
     });
-    private readonly Scope _coreScope = new();
+
+    private static readonly Scope CoreScope = new();
+
+    private readonly BindingTable _bindings;
+    private readonly VM _vm;
+    private readonly Environment _coreEnvironment;
 
     public Expander()
+        : this(Environment.Base())
     {
-        _coreEnvironment = Environment.Base();
-        _vm = new VM(_coreEnvironment);
+
+    }
+
+    public Expander(Environment e)
+        : this(e, new VM(e))
+    {
+
+    }
+
+    public Expander(Environment e, VM vm)
+    {
+        _coreEnvironment = e;
+        _vm = vm;
+
         _bindings = new BindingTable();
 
-        foreach (var core in _coreForms.Union(_coreEnvironment.GetNames().Select(SchemeSymbol.FromString)))
-            _bindings.Add(new SchemeSyntaxObject(core, _coreScope), core);
+
     }
 
     private static void AddScopeRecursive(SchemeObject x, Scope s)
@@ -34,6 +49,16 @@ public class Expander
             }
         });
 
+    private static void FlipScopeRecursive(SchemeObject x, Scope s)
+        => x.Visit(new SchemeObjectVisitor(false)
+        {
+            OnSchemeSyntaxObject = (stx, datum) =>
+            {
+                stx.FlipScope(s);
+                return stx;
+            }
+        });
+
     private static SchemeObject ToDatum(SchemeObject o)
         => o.Visit(new SchemeObjectVisitor()
         {
@@ -42,13 +67,17 @@ public class Expander
 
     public SchemeObject Expand(SchemeObject o)
     {
+        _bindings.Clear();
+        foreach (var core in CoreForms.Union(_coreEnvironment.GetNames().Select(SchemeSymbol.FromString)))
+            _bindings.Add(new SchemeSyntaxObject(core, CoreScope), core);
+
         var x = o.Visit(new SchemeObjectVisitor()
         {
             OnSchemeSyntaxObject = (stx, datum) =>
             {
                 if (datum is SchemeSymbol)
                 {
-                    stx.AddScope(_coreScope);
+                    stx.AddScope(CoreScope);
                     return stx;
                 }
                 return datum;
@@ -68,6 +97,12 @@ public class Expander
         {
             return ExpandApplication(p, e);
         }
+        else
+        {
+            return new SchemePair(
+                new SchemeSyntaxObject(SchemeSymbol.Form.Quote, CoreScope),
+                new SchemePair(o, SchemeEmptyList.Value));
+        }
 
         throw new Exception("bad syntax: " + o.ToString());
     }
@@ -79,7 +114,7 @@ public class Expander
             if (_coreEnvironment.TryGet(b, out SchemeObject? _))
                 return o;
 
-            if (_coreForms.Contains(b))
+            if (CoreForms.Contains(b))
                 throw new Exception("bad syntax");
 
             if (e.TryGet(b, out SchemeObject? eo) && eo is SchemeSymbol v)
@@ -118,8 +153,7 @@ public class Expander
                 var ts = new Scope();
                 AddScopeRecursive(p, ts);
                 var result = _vm.Run(macro, p);
-
-                // TODO: flip scope!!
+                FlipScopeRecursive(p, ts);
 
                 return Expand(result, e);
             }
@@ -141,7 +175,7 @@ public class Expander
         foreach (var pair in bindings)
         {
             var lhs = pair.Car.To<SchemeSyntaxObject>();
-            AddScopeRecursive(lhs, _coreScope);
+            AddScopeRecursive(lhs, CoreScope);
             var binding = _bindings.Add(lhs);
 
             var rhs = pair.Cdr.To<SchemePair>().Car;

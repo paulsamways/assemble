@@ -5,18 +5,17 @@ namespace Scheme.Tests.Compiler;
 
 public class VMTests
 {
-    private readonly ITestOutputHelper output;
+    private readonly VM _vm;
 
     public VMTests(ITestOutputHelper output)
     {
-        this.output = output;
+        _vm = new();
     }
 
     [Fact]
     public void Constant_Test()
     {
-        var vm = new VM();
-        var result = vm.Run((SchemeDatum)new Parser().Parse("1")) as SchemeNumber;
+        var result = _vm.Run("1") as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);
@@ -25,9 +24,8 @@ public class VMTests
     [Fact]
     public void Refer_Test()
     {
-        var vm = new VM();
-        vm.Environment.Set(SchemeSymbol.FromString("a"), new SchemeNumber(2));
-        var result = vm.Run((SchemeDatum)new Parser().Parse("a")) as SchemeNumber;
+        _vm.Environment.Set(SchemeSymbol.FromString("a"), new SchemeNumber(2));
+        var result = _vm.Run("a") as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(2, result.Value);
@@ -37,7 +35,7 @@ public class VMTests
     public void If_Test()
     {
         var vm = new VM();
-        var result = vm.Run((SchemeDatum)new Parser().Parse("(if #t 1 2)")) as SchemeNumber;
+        var result = vm.Run("(if #t 1 2)") as SchemeNumber;
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Value);

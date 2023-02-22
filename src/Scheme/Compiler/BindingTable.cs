@@ -14,6 +14,9 @@ public class BindingTable
     public void Add(SchemeSyntaxObject o, SchemeSymbol s)
         => _bindings.Add(o, s);
 
+    public void Clear()
+        => _bindings.Clear();
+
     public SchemeSymbol Add(SchemeSyntaxObject o)
     {
         if (o.Datum is SchemeSymbol s)
@@ -36,15 +39,6 @@ public class BindingTable
 
     public bool TryResolve(SchemeSyntaxObject o, [NotNullWhen(true)] out SchemeSymbol? binding)
     {
-        // (cond
-        //    [(pair? candidate-ids)
-        //     (define max-id
-        //       (argmax (compose set-count syntax-scopes)
-        //               candidate-ids))
-        //     (check-unambiguous max-id candidate-ids)
-        //     (hash-ref all-bindings max-id)]
-        //    [else #f]))
-
         binding = null;
 
         var candidates = FindAllMatching(o);
@@ -62,9 +56,6 @@ public class BindingTable
 
     private IEnumerable<SchemeSyntaxObject> FindAllMatching(SchemeSyntaxObject o)
     {
-        // #:when (and (eq? (syntax-e c-id) (syntax-e id)) // datums are eq
-        //            (subset? (syntax-scopes c-id) (syntax-scopes id)) /
-
         return _bindings
             .Keys
             .Where(x => x.Datum.Equals(o.Datum) && x.Scope.IsSubsetOf(o.Scope));

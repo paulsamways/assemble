@@ -4,9 +4,18 @@ namespace Scheme.Compiler;
 
 public class VM
 {
+    private readonly Parser _parser;
+    private readonly Expander _expander;
+    private readonly Compiler _compiler;
+
     public VM(Environment? e = null)
     {
         Environment = e ?? Environment.Base();
+
+        _parser = new Parser(true);
+        _expander = new Expander(Environment, this);
+        _compiler = new Compiler();
+
         Accumulator = SchemeUndefined.Value;
         Ribs = new List<SchemeObject>();
     }
@@ -76,10 +85,15 @@ public class VM
         return Accumulator;
     }
 
+    public SchemeObject Run(string input)
+    {
+        return Run(_parser.Parse(input));
+    }
+
     public SchemeObject Run(SchemeObject input)
     {
-        var compiler = new Compiler();
-        Next = compiler.Compile(input);
+        // Next = _compiler.Compile(_expander.Expand(input));
+        Next = _compiler.Compile(input);
 
         return Run();
     }

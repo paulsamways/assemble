@@ -1,4 +1,5 @@
 using Scheme.Compiler.Instructions;
+using static Scheme.Compiler.Match;
 
 namespace Scheme.Compiler;
 
@@ -52,46 +53,50 @@ public class Compiler
 
     private Instruction CompileQuote(SchemePair p, SourceInfo? _, Instruction next)
     {
-        var datum = p.Cdr.To<SchemePair>().Car.To<SchemeDatum>(out SourceInfo? datumSource);
+        var (_, _, datum) = MatchOrThrow(p,
+            List(Symbol(SchemeSymbol.Form.Quote), AnyDatum));
 
-        return CompileConstant(datum, datumSource, next);
+        return CompileConstant(datum, null, next);
     }
 
     private Instruction CompileSet(SchemePair p, SourceInfo? _, Instruction next)
     {
-        var assign = new Assign(p.Cdr.To<SchemePair>().Car.To<SchemeSymbol>().Value, next);
+        var (_, _, name, value) = MatchOrThrow(p,
+            List(Symbol(SchemeSymbol.Form.Set), AnySymbol, AnyDatum));
 
-        return CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car, assign);
+        return CompileDatum(value, new Assign(name.Value, next));
     }
 
     private Instruction CompileIf(SchemePair p, SourceInfo? _, Instruction next)
     {
-        var then = CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car, next);
-        var @else = CompileDatum(p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().Cdr.To<SchemePair>().Car, next);
+        var (_, _, predicate, then, @else) = MatchOrThrow(p,
+            List(Symbol(SchemeSymbol.Form.If), AnyDatum, AnyDatum, AnyDatum));
 
-        return CompileDatum(p.Cdr.To<SchemePair>().Car, new Test(then, @else));
+        return CompileDatum(predicate,
+            new Test(CompileDatum(then, next), CompileDatum(@else, next)));
     }
 
     private Instruction CompileClosure(SchemePair p, SourceInfo? _, Instruction next)
     {
-        var parameters = p.Cdr.To<SchemePair>().Car.To<SchemePair>().ToEnumerable(true).Select(x => x.To<SchemeSymbol>().Value).ToArray();
+        var (_, _, (_, parameters), expressions) = MatchOrThrow(p,
+            ListMany(Symbol(SchemeSymbol.Form.Lambda), ListMany(AnySymbol), AnyDatum));
+
         Instruction body = new Return();
 
-        foreach (var bodyExpression in p.Cdr.To<SchemePair>().Cdr.To<SchemePair>().ToEnumerable(true).Reverse())
+        foreach (var bodyExpression in expressions.Reverse())
             body = CompileDatum(bodyExpression, body);
 
-        return new Closure(parameters, body, next);
+        return new Closure(parameters.Select(x => x.Value).ToArray(), body, next);
     }
 
     private Instruction CompileApplication(SchemePair p, SourceInfo? _, Instruction next)
     {
-        Instruction proc = CompileDatum(p.Car, new Apply());
+        var (_, binding, arguments) = MatchOrThrow(p, ListMany(AnyDatum, AnyDatum));
 
-        if (p.Cdr is SchemePair args)
-        {
-            foreach (var argument in args.ToEnumerable(true).Reverse())
-                proc = CompileDatum(argument, new Argument(proc));
-        }
+        Instruction proc = CompileDatum(binding, new Apply());
+
+        foreach (var argument in arguments.Reverse())
+            proc = CompileDatum(argument, new Argument(proc));
 
         if (next is Return)
             return proc;
@@ -101,6 +106,7 @@ public class Compiler
 
     private Instruction CompileContinuation(SchemePair p, SourceInfo? _, Instruction next)
     {
+        // TODO: Use Matcher
         var conti = new Conti(
             new Argument(
                 CompileDatum(p.Cdr.To<SchemePair>().Car,
