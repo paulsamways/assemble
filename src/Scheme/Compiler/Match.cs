@@ -79,6 +79,13 @@ public abstract class Match
                 ? new(p, p.ToEnumerable(true).ToArray()) : null);
     }
 
+    public static Match<Tuple<SchemeSyntaxObject, T>> Syntax<T>(Match<T> a)
+    {
+        return new("syntax", (SchemeObject input) =>
+            input.TryTo<SchemeSyntaxObject>(out var stx, out _) && a.Func(stx.Datum) is Match<T>.Success success
+                ? new(stx, success.Value) : null);
+    }
+
     public static Match<Tuple<SchemePair, T[]>> ListMany<T>(Match<T> a)
     {
         return new($"list of many {a.Name}", (SchemeObject input) =>

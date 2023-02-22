@@ -273,4 +273,14 @@ public class MatcherTests
         Assert.Equal(SchemeSymbol.FromString("b"), b);
         Assert.Equal(SchemeSymbol.FromString("c"), c);
     }
+
+    [Fact]
+    public void Match_Syntax()
+    {
+        var syntaxParser = new Parser(true);
+        var o = syntaxParser.Parse("(a)");
+
+        var (p, (stx, a)) = MatchOrThrow(o, List(Syntax(Symbol("a"))));
+        Assert.Equal(SchemeSymbol.FromString("a"), a);
+    }
 }
