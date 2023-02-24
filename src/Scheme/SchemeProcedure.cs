@@ -1,6 +1,6 @@
 namespace Scheme;
 
-using Scheme.Compiler;
+using Scheme.Interpreter;
 
 public class SchemeProcedure : SchemeObject
 {

@@ -4,7 +4,7 @@ internal sealed class AutoCompletionHandler : IAutoCompleteHandler
 {
     private readonly string[] _globalBindings;
 
-    public AutoCompletionHandler(Scheme.Compiler.Environment e)
+    public AutoCompletionHandler(Interpreter.Environment e)
     {
         var names = new SortedSet<string>
             {

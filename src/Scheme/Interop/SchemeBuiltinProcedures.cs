@@ -1,6 +1,6 @@
 namespace Scheme.Interop;
 
-using Scheme.Compiler;
+using Scheme.Interpreter;
 
 public static class SchemeBuiltinProcedures
 {

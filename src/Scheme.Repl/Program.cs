@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using Scheme.Compiler;
+using Scheme.Interpreter;
 
 namespace Scheme.Repl;
 
@@ -8,7 +8,7 @@ public static class Program
     private static void Main(string[] args)
     {
         var stopwatch = new Stopwatch();
-        var environment = Scheme.Compiler.Environment.Base();
+        var environment = Scheme.Interpreter.Environment.Base();
         var vm = new VM(environment);
 
         ReadLine.AutoCompletionHandler = new AutoCompletionHandler(environment);

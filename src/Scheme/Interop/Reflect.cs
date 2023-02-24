@@ -5,7 +5,7 @@ namespace Scheme.Interop;
 
 public static class Reflect
 {
-    public static void LoadBuiltinProceduresFromAssembly<T>(Compiler.Environment e)
+    public static void LoadBuiltinProceduresFromAssembly<T>(Interpreter.Environment e)
     {
         foreach (var t in typeof(T).Assembly.ExportedTypes)
         {
@@ -23,7 +23,7 @@ public static class Reflect
                             var pEnvironment = Expression.Parameter(typeof(Environment), "e");
                             var pArguments = Expression.Parameter(typeof(SchemeObject[]), "xs");
 
-                            var expr = Expression.Lambda<Func<Compiler.Environment, SchemeObject[], SchemeObject>>(
+                            var expr = Expression.Lambda<Func<Interpreter.Environment, SchemeObject[], SchemeObject>>(
                                 Expression.Call(null, method, pEnvironment, pArguments),
                                 false,
                                 pEnvironment,
@@ -45,10 +45,10 @@ public static class Reflect
                     {
                         SchemeObject p;
 
-                        if (field.FieldType == typeof(Func<Compiler.Environment, SchemeObject[], SchemeObject>))
+                        if (field.FieldType == typeof(Func<Interpreter.Environment, SchemeObject[], SchemeObject>))
                         {
                             p = new SchemeBuiltinProcedure(
-                                (Func<Compiler.Environment, SchemeObject[], SchemeObject>)field.GetValue(null)!
+                                (Func<Interpreter.Environment, SchemeObject[], SchemeObject>)field.GetValue(null)!
                             );
 
                         }

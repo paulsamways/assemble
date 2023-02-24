@@ -1,11 +1,23 @@
-using Scheme.Compiler;
+using Scheme.Expander;
 
 namespace Scheme;
 
 public class SchemeSyntaxObject : SchemeObject
 {
+    public SchemeSyntaxObject(SchemeDatum datum, HashSet<Scope> scopes)
+        : this(datum, null, scopes.ToArray())
+    {
+
+    }
+
     public SchemeSyntaxObject(SchemeDatum datum, params Scope[] scopes)
         : this(datum, null, scopes)
+    {
+
+    }
+
+    public SchemeSyntaxObject(SchemeDatum datum, SourceInfo? source, HashSet<Scope>? scopes)
+        : this(datum, source, scopes is not null ? scopes.ToArray() : Array.Empty<Scope>())
     {
 
     }
@@ -51,4 +63,12 @@ public class SchemeSyntaxObject : SchemeObject
 
     public override SchemeObject Visit(SchemeObjectVisitor v)
         => v.OnSchemeSyntaxObject(this, Datum.Visit(v).To<SchemeDatum>());
+
+    public SchemeObject SyntaxToDatum()
+        => Visit(new SchemeObjectVisitor()
+        {
+            OnSchemeSyntaxObject = (stx, datum) => datum
+        });
+
+    public static SchemeSyntaxObject Empty => new(SchemeEmptyList.Value);
 }

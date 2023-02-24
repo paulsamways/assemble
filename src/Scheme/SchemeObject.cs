@@ -1,7 +1,7 @@
 namespace Scheme;
 
 using System.Diagnostics.CodeAnalysis;
-using Scheme.Compiler;
+using Scheme.Interpreter;
 
 public abstract class SchemeObject : IEquatable<SchemeObject>
 {
