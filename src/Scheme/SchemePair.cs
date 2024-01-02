@@ -64,6 +64,9 @@ public class SchemePair : SchemeDatum
             .Aggregate((SchemeDatum)SchemeEmptyList.Value, (cdr, value) => new SchemePair(value, cdr));
     }
 
+    public static SchemeObject List(params SchemeObject[] values)
+        => FromEnumerable(values);
+
     public override SchemeObject Visit(SchemeObjectVisitor v)
         => v.OnSchemePair(this, Car.Visit(v), Cdr.Visit(v));
 }

@@ -5,6 +5,7 @@ namespace Scheme.Interpreter;
 public class VM
 {
     private readonly Parser _parser;
+    private readonly Expander.Expander _expander;
     private readonly Compiler _compiler;
 
     public VM(Environment? e = null)
@@ -12,6 +13,7 @@ public class VM
         Environment = e ?? Environment.Base();
 
         _parser = new Parser(true);
+        _expander = new Expander.Expander(Environment, this);
         _compiler = new Compiler();
 
         Accumulator = SchemeUndefined.Value;
@@ -88,9 +90,11 @@ public class VM
         return Run(_parser.Parse(input));
     }
 
-    public SchemeObject Run(SchemeObject input)
+    public SchemeObject Run(SchemeObject input, bool expand = false)
     {
-        Next = _compiler.Compile(input);
+        var o = expand ? _expander.Expand(input) : input;
+
+        Next = _compiler.Compile(o);
 
         return Run();
     }

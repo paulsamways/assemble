@@ -31,7 +31,7 @@ public sealed class TopLevelBinding : Binding
     public override SchemeObject LookupIn(Environment e, Namespace ns, SchemeSymbol id)
     {
         if (ns.TryGetTransformer(Symbol, out var o))
-            return o.Procedure;
+            return o;
 
         return Variable;
     }

@@ -3,15 +3,15 @@ namespace Scheme.Tests.Expander;
 public class ExpanderTests
 {
     [Fact]
-    public void LambdaExpandsToItself()
+    public void TopLevelIdentifier()
     {
-        var o = new Parser(false).Parse("(lambda (x) x)");
-        var stx = new Parser(true).Parse("(lambda (x) x)");
+        var stx = new Parser(true).Parse("x");
+        var d = stx.To<SchemeSyntaxObject>().SyntaxToDatum();
 
         var expander = new Scheme.Expander.Expander();
         var result = expander.Expand(stx);
 
-        Assert.Equal(o, result);
+        Assert.Equal(d, result);
     }
 
     [Fact]

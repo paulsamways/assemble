@@ -1,6 +1,7 @@
 namespace Scheme;
 
 using System.Diagnostics.CodeAnalysis;
+using Scheme.Expander;
 using Scheme.Interpreter;
 
 public abstract class SchemeObject : IEquatable<SchemeObject>
@@ -67,4 +68,15 @@ public abstract class SchemeObject : IEquatable<SchemeObject>
 
     public static implicit operator SchemeObject(Func<Environment, SchemeObject, SchemeObject> f)
         => new SchemeBuiltinProcedure((e, xs) => f(e, xs[0]));
+
+    public SchemeObject ToSyntax(HashSet<Scope>? scope = null, SourceInfo? source = null)
+    {
+        SchemeSyntaxObject Wrap(SchemeDatum e) => new(e, source, scope);
+
+        return Visit(new()
+        {
+            OnSchemeSyntaxObject = (x, _) => x,
+            Otherwise = (x) => x is SchemeDatum datum ? Wrap(datum) : x
+        });
+    }
 }

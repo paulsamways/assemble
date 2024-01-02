@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Scheme.Expander;
 
 namespace Scheme;
@@ -71,4 +72,58 @@ public class SchemeSyntaxObject : SchemeObject
         });
 
     public static SchemeSyntaxObject Empty => new(SchemeEmptyList.Value);
+
+    public void AddBindingInScopes(Binding binding)
+    {
+        var sym = Datum.To<SchemeSymbol>();
+
+        if (Scope.Count == 0)
+            throw new Exception("can't bind in empty scope set");
+
+        var maxScope = Scope.MaxBy(x => x.Id)!;
+
+        if (!maxScope.Bindings.TryGetValue(sym, out var b))
+        {
+            b = new();
+            maxScope.Bindings.Add(sym, b);
+        }
+
+        b.Add(Scope, binding);
+    }
+
+    public bool TryResolveBinding([NotNullWhen(true)] out Binding? binding)
+        => TryResolveBinding(false, out binding);
+
+    public bool TryResolveBinding(bool exactly, [NotNullWhen(true)] out Binding? binding)
+    {
+        var candidates = FindAllMatchingBindings();
+        var maxCandidate = candidates.MaxBy(x => x.Item1.Count);
+
+        if (maxCandidate is not null)
+        {
+            foreach (var candidate in candidates)
+                if (!candidate.Item1.IsSubsetOf(maxCandidate.Item1))
+                    throw new Exception("Amgbiguous scope");
+
+            if (!exactly || Scope.Count == maxCandidate.Item1.Count)
+            {
+                binding = maxCandidate.Item2;
+                return true;
+            }
+        }
+
+        binding = null;
+        return false;
+    }
+
+
+    private IEnumerable<Tuple<HashSet<Scope>, Binding>> FindAllMatchingBindings()
+    {
+        var symbol = Datum.To<SchemeSymbol>();
+        foreach (var scope in Scope)
+            if (scope.Bindings.TryGetValue(symbol, out var bindings))
+                foreach (var binding in bindings)
+                    if (binding.Key.IsSubsetOf(Scope))
+                        yield return new(binding.Key, binding.Value);
+    }
 }
